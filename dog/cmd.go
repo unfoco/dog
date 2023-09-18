@@ -6,13 +6,12 @@ import (
 )
 
 type TestCommand struct {
-	First  int    `cmd:"first"`
-	Second string `cmd:"second"`
+	Yay bool `cmd:"yay"`
 }
 
 func (t TestCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
 	embed := discord.NewEmbedBuilder().
-		SetDescriptionf("%v %v", t.First, t.Second).
+		SetDescriptionf("%v", t.Yay).
 		Build()
 	b.AddEmbeds(embed)
 	ctx.SetRemove(true)
