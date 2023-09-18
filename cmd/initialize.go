@@ -27,18 +27,28 @@ func onMessageCommand(event *events.MessageCreate) {
 		return
 	}
 
-	args := strings.Split(msg.Content, " ")
-	resp := onCommand(args[0][1:], args[1:], &Context{
+	ctx := Context{
+		Client:    event.Client(),
 		GuildID:   *event.GuildID,
 		ChannelID: event.ChannelID,
-	})
+	}
 
-	event.Client().Rest().CreateMessage(event.ChannelID, resp)
+	args := strings.Split(msg.Content, " ")
+	resp := onCommand(args[0][1:], args[1:], &ctx)
+
+	if ctx.remove {
+		event.Client().Rest().
+			DeleteMessage(event.ChannelID, event.MessageID)
+	}
+
+	event.Client().Rest().
+		CreateMessage(event.ChannelID, resp)
 }
 
 func onSlashCommand(event *events.ApplicationCommandInteractionCreate) {
 	args := slashToArgs(event.SlashCommandInteractionData())
 	resp := onCommand(args[0], args[1:], &Context{
+		Client:    event.Client(),
 		GuildID:   *event.GuildID(),
 		ChannelID: event.Channel().ID(),
 	})

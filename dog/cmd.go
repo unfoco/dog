@@ -15,6 +15,7 @@ func (t TestCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
 		SetDescriptionf("%v %v", t.First, t.Second).
 		Build()
 	b.AddEmbeds(embed)
+	ctx.SetRemove(true)
 }
 
 type TestSubCommand struct {
