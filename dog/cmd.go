@@ -10,7 +10,7 @@ type TestCommand struct {
 	Second string `cmd:"second"`
 }
 
-func (t TestCommand) Run(b *discord.MessageCreateBuilder) {
+func (t TestCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
 	embed := discord.NewEmbedBuilder().
 		SetDescriptionf("%v %v", t.First, t.Second).
 		Build()
@@ -22,7 +22,7 @@ type TestSubCommand struct {
 	Third int            `cmd:"third"`
 }
 
-func (t TestSubCommand) Run(b *discord.MessageCreateBuilder) {
+func (t TestSubCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
 	embed := discord.NewEmbedBuilder().
 		SetDescriptionf("%#v", cmd.CommandsData()).
 		Build()

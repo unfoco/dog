@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"reflect"
 	"strconv"
 	"strings"
@@ -13,7 +12,6 @@ import (
 // command. It is a convenience wrapper around a string slice.
 type Line struct {
 	args []string
-	//!src  Source
 }
 
 // Next reads the next argument from the command line and returns it. If there were no more arguments to
@@ -70,7 +68,7 @@ type parser struct {
 
 // parseArgument parses the next argument from the command line passed and sets it to value v passed. If
 // parsing was not successful, an error is returned.
-func (p parser) parseArgument(line *Line, v reflect.Value, optional bool, name string /*source Source*/) (error, bool) {
+func (p parser) parseArgument(line *Line, v reflect.Value, optional bool, name string) (error, bool) {
 	var err error
 	i := v.Interface()
 	switch i.(type) {
@@ -84,12 +82,8 @@ func (p parser) parseArgument(line *Line, v reflect.Value, optional bool, name s
 		err = p.string(line, v)
 	case bool:
 		err = p.bool(line, v, name)
-	//!case mgl64.Vec3:
-	//!	err = p.vec3(line, v)
 	case Varargs:
 		err = p.varargs(line, v)
-	case []Target:
-		err = p.targets(line, v)
 	case SubCommand:
 		err = p.sub(line, name)
 	default:
@@ -98,7 +92,7 @@ func (p parser) parseArgument(line *Line, v reflect.Value, optional bool, name s
 			break
 		}
 		if enum, ok := i.(Enum); ok {
-			err = p.enum(line, v, enum /*source*/)
+			err = p.enum(line, v, enum)
 			break
 		}
 		panic(fmt.Sprintf("non-command parameter type %T in command structure", i))
@@ -186,13 +180,13 @@ func (p parser) bool(line *Line, v reflect.Value, name string) error {
 }
 
 // enum ...
-func (p parser) enum(line *Line, val reflect.Value, v Enum /*source Source*/) error {
+func (p parser) enum(line *Line, val reflect.Value, v Enum) error {
 	arg, ok := line.Next()
 	if !ok {
 		return ErrInsufficientArgs
 	}
 	found := ""
-	for _, option := range v.Options( /*source*/ ) {
+	for _, option := range v.Options() {
 		if strings.EqualFold(option, arg) {
 			found = option
 		}
@@ -220,69 +214,4 @@ func (p parser) sub(line *Line, name string) error {
 func (p parser) varargs(line *Line, v reflect.Value) error {
 	v.SetString(strings.Join(line.Leftover(), " "))
 	return nil
-}
-
-// targets ...
-func (p parser) targets(line *Line, v reflect.Value) error {
-	targets, err := p.parseTargets(line)
-	if err != nil {
-		return err
-	}
-	if len(targets) == 0 {
-		return fmt.Errorf("no targets found")
-	}
-	v.Set(reflect.ValueOf(targets))
-	return nil
-}
-
-// parseTargets parses one or more Targets from the Line passed.
-func (p parser) parseTargets(line *Line) ([]Target, error) {
-	entities, players := targets( /*line.src*/ )
-	first, ok := line.Next()
-	if !ok {
-		return nil, ErrInsufficientArgs
-	}
-	switch first {
-	//!case "@p":
-	//!	pos := line.src.Position()
-	//!	playerDistances := make([]float64, len(players))
-	//!	for i, p := range players {
-	//!		playerDistances[i] = p.Position().Sub(pos).Len()
-	//!	}
-	//!	sort.Slice(players, func(i, j int) bool {
-	//!		return playerDistances[i] < playerDistances[j]
-	//!	})
-	//!	if len(players) == 0 {
-	//!		return nil, nil
-	//!	}
-	//!	return sliceutil.Convert[Target](players[0:1]), nil
-	case "@e":
-		return entities, nil
-	//!case "@a":
-	//!	return sliceutil.Convert[Target](players), nil
-	case "@s":
-		return []Target{ /*line.src*/ }, nil
-	case "@r":
-		if len(players) == 0 {
-			return nil, nil
-		}
-		return []Target{players[rand.Intn(len(players))]}, nil
-	default:
-		target, err := p.parsePlayer(players, first)
-		return []Target{target}, err
-	}
-}
-
-// parsePlayer parses one Player from the Line, reading more arguments if necessary to find a valid player
-// from the players Target list.
-func (p parser) parsePlayer(players []NamedTarget, name string) (Target, error) {
-	for _, p := range players {
-		if strings.EqualFold(p.Name(), name) {
-			// We found a match for this amount of arguments. Following arguments may still be a better
-			// match though (subset in the name, such as 'Hello' vs 'Hello World' as name), so keep going
-			// until we saturate the command line or pass 15 characters.
-			return p, nil
-		}
-	}
-	return nil, fmt.Errorf("player with name '%v' not found", name)
 }

@@ -28,35 +28,29 @@ func onMessageCommand(event *events.MessageCreate) {
 	}
 
 	args := strings.Split(msg.Content, " ")
-	cmd, ok := ByAlias(args[0][1:])
-
-	var resp discord.MessageCreate
-
-	if ok {
-		if out, err := cmd.Execute(strings.Join(args[1:], " ")); err != nil {
-			resp = discord.NewMessageCreateBuilder().
-				SetContentf(err.Error()).
-				Build()
-		} else {
-			resp = out.Build()
-		}
-	} else {
-		resp = discord.NewMessageCreateBuilder().
-			SetContent("Please check that the command exists and that you have permission to use it.").
-			Build()
-	}
+	resp := onCommand(args[0][1:], args[1:], &Context{
+		GuildID:   *event.GuildID,
+		ChannelID: event.ChannelID,
+	})
 
 	event.Client().Rest().CreateMessage(event.ChannelID, resp)
 }
 
 func onSlashCommand(event *events.ApplicationCommandInteractionCreate) {
 	args := slashToArgs(event.SlashCommandInteractionData())
-	cmd, ok := ByAlias(args[0])
+	resp := onCommand(args[0], args[1:], &Context{
+		GuildID:   *event.GuildID(),
+		ChannelID: event.Channel().ID(),
+	})
 
-	var resp discord.MessageCreate
+	event.CreateMessage(resp)
+}
+
+func onCommand(name string, args []string, ctx *Context) (resp discord.MessageCreate) {
+	cmd, ok := ByAlias(name)
 
 	if ok {
-		if out, err := cmd.Execute(strings.Join(args[1:], " ")); err != nil {
+		if out, err := cmd.Execute(strings.Join(args, " "), ctx); err != nil {
 			resp = discord.NewMessageCreateBuilder().
 				SetContentf(err.Error()).
 				Build()
@@ -68,8 +62,7 @@ func onSlashCommand(event *events.ApplicationCommandInteractionCreate) {
 			SetContent("Please check that the command exists and that you have permission to use it.").
 			Build()
 	}
-
-	event.CreateMessage(resp)
+	return
 }
 
 func slashToArgs(data discord.SlashCommandInteractionData) (args []string) {

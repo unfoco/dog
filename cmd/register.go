@@ -91,12 +91,6 @@ func CommandsData() (list []discord.ApplicationCommandCreate) {
 						Description: p.Name,
 						Required:    !p.Optional,
 					}
-				case []Target:
-					paramData = discord.ApplicationCommandOptionUser{
-						Name:        p.Name,
-						Description: p.Name,
-						Required:    !p.Optional,
-					}
 				case SubCommand:
 					sub = p.Name
 					continue
