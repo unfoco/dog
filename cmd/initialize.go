@@ -34,7 +34,7 @@ func onMessageCommand(event *events.MessageCreate) {
 	}
 
 	args := strings.Split(msg.Content, " ")
-	resp := onCommand(args[0][1:], args[1:], &ctx)
+	resp := onCommand(args[0][len(pfx):], args[1:], &ctx)
 
 	if ctx.remove {
 		event.Client().Rest().
@@ -91,7 +91,7 @@ func slashToArgs(data discord.SlashCommandInteractionData) (args []string) {
 		case discord.ApplicationCommandOptionTypeInt:
 			args = append(args, strconv.Itoa(data.Int(o.Name)))
 		case discord.ApplicationCommandOptionTypeBool:
-			args = append(args, data.String(o.Name))
+			args = append(args, strconv.FormatBool(data.Bool(o.Name)))
 		case discord.ApplicationCommandOptionTypeUser:
 			args = append(args, data.User(o.Name).Mention())
 		case discord.ApplicationCommandOptionTypeChannel:

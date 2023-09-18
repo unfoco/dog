@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Token  string            `json:"token"`
+	Admin  string            `json:"admin"`
 	Boards map[string]string `json:"boards"`
 }
 

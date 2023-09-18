@@ -4,10 +4,17 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/snowflake/v2"
+	"golang.org/x/exp/slices"
 )
 
 func (d *Dog) onReactionAdd(event *events.GuildMessageReactionAdd) {
 	boards := d.config.Boards
+	admin := snowflake.MustParse(d.config.Admin)
+
+	ok := slices.Contains(event.Member.RoleIDs, admin)
+	if !ok {
+		return
+	}
 
 	for emoji, channel := range boards {
 		if event.Emoji.Reaction() != emoji {
