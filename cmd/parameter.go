@@ -96,10 +96,6 @@ func typeNameOf(i any, name string) string {
 		return "text"
 	case bool:
 		return "bool"
-	//!case mgl64.Vec3:
-	//!	return "x y z"
-	case []Target:
-		return "target"
 	case SubCommand:
 		return name
 	}

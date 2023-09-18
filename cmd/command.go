@@ -31,7 +31,7 @@ type Runnable interface {
 	// Run runs the Command, using the arguments passed to the Command. The source is passed to the method,
 	// which is the source of the execution of the Command, and the output is passed, to which messages may be
 	// added which get sent to the source.
-	Run( /*src Source, */ b *discord.MessageCreateBuilder)
+	Run(ctx *Context, b *discord.MessageCreateBuilder)
 }
 
 // Allower may be implemented by a type also implementing Runnable to limit the sources that may run the
@@ -39,7 +39,7 @@ type Runnable interface {
 type Allower interface {
 	// Allow checks if the Source passed is allowed to execute the command. True is returned if the Source is
 	// allowed to execute the command.
-	Allow( /*src Source*/ ) bool
+	Allow(ctx *Context) bool
 }
 
 // Command is a wrapper around a Runnable. It provides additional identity and utility methods for the actual
@@ -124,10 +124,7 @@ func (cmd Command) Aliases() []string {
 // If parsing of all Runnables was unsuccessful, a command output with an error message is sent to the Source
 // passed, and the Run method of the Runnables are not called.
 // The Source passed must not be nil. The method will panic if a nil Source is passed.
-func (cmd Command) Execute(args string /*source Source*/) (*discord.MessageCreateBuilder, error) {
-	/*if source == nil {
-		panic("execute: invalid command source: source must not be nil")
-	}*/
+func (cmd Command) Execute(args string, ctx *Context) (*discord.MessageCreateBuilder, error) {
 	builder := discord.NewMessageCreateBuilder()
 
 	var leastErroneous error
@@ -136,7 +133,7 @@ func (cmd Command) Execute(args string /*source Source*/) (*discord.MessageCreat
 	for _, v := range cmd.v {
 		cp := reflect.New(v.Type())
 		cp.Elem().Set(v)
-		line, err := cmd.executeRunnable(cp, args /*, source*/, builder)
+		line, err := cmd.executeRunnable(cp, args, ctx, builder)
 		if err == nil {
 			// Command was executed successfully: We won't execute any of the other Runnable values passed, as
 			// we've already found an overload that works.
@@ -173,16 +170,11 @@ type ParamInfo struct {
 
 // Params returns a list of all parameters of the runnables. No assumptions should be done on the values that
 // they hold: Only the types are guaranteed to be consistent.
-func (cmd Command) Params( /*src Source*/ ) [][]ParamInfo {
+func (cmd Command) Params() [][]ParamInfo {
 	params := make([][]ParamInfo, 0, len(cmd.v))
 	for _, runnable := range cmd.v {
 		elem := reflect.New(runnable.Type()).Elem()
 		elem.Set(runnable)
-
-		if allower, ok := runnable.Interface().(Allower); ok && !allower.Allow( /*src*/ ) {
-			// This source cannot execute this runnable.
-			continue
-		}
 
 		var fields []ParamInfo
 		for _, t := range exportedFields(elem) {
@@ -200,11 +192,11 @@ func (cmd Command) Params( /*src Source*/ ) [][]ParamInfo {
 }
 
 // Runnables returns a map of all Runnable implementations of the Command that a Source can execute.
-func (cmd Command) Runnables( /*src Source*/ ) map[int]Runnable {
+func (cmd Command) Runnables(ctx *Context) map[int]Runnable {
 	m := make(map[int]Runnable, len(cmd.v))
 	for i, runnable := range cmd.v {
 		v := runnable.Interface().(Runnable)
-		if allower, ok := v.(Allower); !ok || allower.Allow( /*src*/ ) {
+		if allower, ok := v.(Allower); !ok || allower.Allow(ctx) {
 			m[i] = v
 		}
 	}
@@ -220,8 +212,8 @@ func (cmd Command) String() string {
 // executeRunnable executes a Runnable v, by parsing the args passed using the source and output obtained. If
 // parsing was not successful or the Runnable could not be run by this source, an error is returned, and the
 // leftover command line.
-func (cmd Command) executeRunnable(v reflect.Value, args string /*, source Source*/, builder *discord.MessageCreateBuilder) (*Line, error) {
-	if a, ok := v.Interface().(Allower); ok && !a.Allow( /*source*/ ) {
+func (cmd Command) executeRunnable(v reflect.Value, args string, ctx *Context, builder *discord.MessageCreateBuilder) (*Line, error) {
+	if a, ok := v.Interface().(Allower); ok && !a.Allow(ctx) {
 		//lint:ignore ST1005 Error string is capitalised because it is shown to the player.
 		//goland:noinspection GoErrorStringFormat
 		return nil, fmt.Errorf("You cannot execute this command.")
@@ -239,7 +231,7 @@ func (cmd Command) executeRunnable(v reflect.Value, args string /*, source Sourc
 		argFrags = record
 	}
 	parser := parser{}
-	arguments := &Line{args: argFrags /*, src: source*/}
+	arguments := &Line{args: argFrags}
 
 	// We iterate over all the fields of the struct: Each of the fields will have an argument parsed to
 	// produce its value.
@@ -254,7 +246,7 @@ func (cmd Command) executeRunnable(v reflect.Value, args string /*, source Sourc
 			val = reflect.New(field.Field(0).Type()).Elem()
 		}
 
-		err, success := parser.parseArgument(arguments, val, opt, name(t) /*source*/)
+		err, success := parser.parseArgument(arguments, val, opt, name(t))
 		if err != nil {
 			// Parsing was not successful, we return immediately as we don't need to call the Runnable.
 			return arguments, err
@@ -267,7 +259,7 @@ func (cmd Command) executeRunnable(v reflect.Value, args string /*, source Sourc
 		return arguments, fmt.Errorf("unexpected '%v'", strings.Join(arguments.args, " "))
 	}
 
-	v.Interface().(Runnable).Run( /*source, */ builder)
+	v.Interface().(Runnable).Run(ctx, builder)
 	return arguments, nil
 }
 
