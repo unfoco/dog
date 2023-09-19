@@ -27,10 +27,13 @@ func onMessageCommand(event *events.MessageCreate) {
 		return
 	}
 
+	event.Channel()
+
 	ctx := Context{
 		Client:    event.Client(),
-		GuildID:   *event.GuildID,
+		GuildID:   event.GuildID,
 		ChannelID: event.ChannelID,
+		UserID:    msg.Author.ID,
 	}
 
 	args := strings.Split(msg.Content, " ")
@@ -54,8 +57,9 @@ func onSlashCommand(event *events.ApplicationCommandInteractionCreate) {
 	args := slashToArgs(data)
 	resp := onCommand(args[0], args[1:], &Context{
 		Client:    event.Client(),
-		GuildID:   *event.GuildID(),
+		GuildID:   event.GuildID(),
 		ChannelID: event.Channel().ID(),
+		UserID:    event.User().ID,
 	})
 
 	event.CreateMessage(resp)

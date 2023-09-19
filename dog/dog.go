@@ -51,7 +51,7 @@ func (d *Dog) initEvents() {
 }
 
 func (d *Dog) initCommands() {
-	cmd.Register(cmd.New("test", "test command", nil, TestCommand{}, TestSubCommand{}))
+	cmd.Register(cmd.New("purge", "purges messages", nil, PurgeCommand{}))
 	cmd.Init(d.client, "!")
 
 	data := cmd.CommandsData()
