@@ -10,7 +10,7 @@ import (
 	"github.com/disgoorg/disgo/discord"
 )
 
-// Runnable represents a Command that may be run by a Command source. The Command must be a struct type and
+// Runnable represents a Command that may be run with a Command context. The Command must be a struct type and
 // its fields represent the parameters of the Command. When the Run method is called, these fields are set
 // and may be used for behaviour in the Command. Fields unexported or ignored using the `cmd:"-"` struct tag (see
 // below) have their values copied but retained.
@@ -28,9 +28,9 @@ import (
 // If no name is set, the field name is used. Additionally, the name as specified in the struct tag may be '-' to make
 // the parser ignore the field. In this case, the field does not have to be of one of the types above.
 type Runnable interface {
-	// Run runs the Command, using the arguments passed to the Command. The source is passed to the method,
-	// which is the source of the execution of the Command, and the output is passed, to which messages may be
-	// added which get sent to the source.
+	// Run runs the Command, using the arguments passed to the Command. The context is passed to the method,
+	// which is the context of the execution of the Command, and the message builder is passed, to which
+	// messages may be added which get sent to the source.
 	Run(ctx *Context, b *discord.MessageCreateBuilder)
 }
 
@@ -123,8 +123,11 @@ func (cmd Command) Aliases() []string {
 // to be run.
 // If parsing of all Runnables was unsuccessful, a command output with an error message is sent to the Source
 // passed, and the Run method of the Runnables are not called.
-// The Source passed must not be nil. The method will panic if a nil Source is passed.
-func (cmd Command) Execute(args string, ctx *Context) (*discord.MessageCreateBuilder, error) {
+// The Context passed must not be nil. The method will panic if a nil Context is passed.
+func (cmd Command) Execute(ctx *Context, args string) (*discord.MessageCreateBuilder, error) {
+	if ctx == nil {
+		panic("execute: invalid command context: context must not be nil")
+	}
 	builder := discord.NewMessageCreateBuilder()
 
 	var leastErroneous error
@@ -209,7 +212,7 @@ func (cmd Command) String() string {
 	return cmd.usage
 }
 
-// executeRunnable executes a Runnable v, by parsing the args passed using the source and output obtained. If
+// executeRunnable executes a Runnable v, by parsing the args passed using the context and obtained message builder. If
 // parsing was not successful or the Runnable could not be run by this source, an error is returned, and the
 // leftover command line.
 func (cmd Command) executeRunnable(v reflect.Value, args string, ctx *Context, builder *discord.MessageCreateBuilder) (*Line, error) {
