@@ -2,29 +2,45 @@ package dog
 
 import (
 	"github.com/disgoorg/disgo/discord"
+	"github.com/disgoorg/snowflake/v2"
 	"github.com/unfoco/dog/cmd"
 )
 
-type TestCommand struct {
-	Yay bool `cmd:"yay"`
+type PurgeCommand struct {
+	Count uint `cmd:"count"`
 }
 
-func (t TestCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
-	embed := discord.NewEmbedBuilder().
-		SetDescriptionf("%v", t.Yay).
-		Build()
-	b.AddEmbeds(embed)
-	ctx.SetRemove(true)
+func (t PurgeCommand) Allow(ctx *cmd.Context) bool {
+	return true //ctx.HasPermUser(discord.PermissionManageChannels)
 }
 
-type TestSubCommand struct {
-	Test  cmd.SubCommand `cmd:"test"`
-	Third int            `cmd:"third"`
-}
+func (t PurgeCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
+	if t.Count > 100 {
+		b.SetContent("you can't purge more than 100 message at once")
+		return
+	}
 
-func (t TestSubCommand) Run(ctx *cmd.Context, b *discord.MessageCreateBuilder) {
-	embed := discord.NewEmbedBuilder().
-		SetDescriptionf("%#v", cmd.CommandsData()).
-		Build()
-	b.AddEmbeds(embed)
+	list, err := ctx.Client.Rest().GetMessages(
+		ctx.ChannelID,
+		snowflake.ID(0),
+		ctx.MessageID,
+		snowflake.ID(0),
+		int(t.Count)+1,
+	)
+	if err != nil {
+		b.SetContent("unable to retrieve messages")
+		return
+	}
+
+	var ids []snowflake.ID
+	for _, v := range list {
+		ids = append(ids, v.ID)
+	}
+
+	err = ctx.Client.Rest().BulkDeleteMessages(ctx.ChannelID, ids)
+	if err != nil {
+		b.SetContent("unable to purge messages")
+	} else {
+		b.SetContentf("purged %v messages", len(ids))
+	}
 }
