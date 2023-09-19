@@ -3,5 +3,6 @@
 unfoco discord server's devoted mascot
 
 todo:
-  - add parsing for discord types
-  - move cmd to seperate repo
+  - missing types for slash cmd data
+  - move cmd to a separate repo
+  - parsing discord types
