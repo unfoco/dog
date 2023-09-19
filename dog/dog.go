@@ -14,6 +14,7 @@ import (
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/unfoco/dog/cmd"
+	"github.com/unfoco/dog/dog/command"
 )
 
 type Dog struct {
@@ -31,6 +32,7 @@ func New(cfg Config, cli bot.Client) *Dog {
 func (d *Dog) Start() {
 	d.initEvents()
 	d.initCommands()
+	d.syncCommands()
 
 	if err := d.client.OpenGateway(context.Background()); err != nil {
 		log.Fatal("error while connecting to gateway: ", err)
@@ -51,11 +53,13 @@ func (d *Dog) initEvents() {
 }
 
 func (d *Dog) initCommands() {
-	cmd.Register(cmd.New("purge", "purges messages", nil, PurgeCommand{}))
-	cmd.Init(d.client, "!")
+	cmd.Register(cmd.New("purge", "purges messages", nil, command.Purge{}))
+	cmd.Init(d.client, d.config.Prefix)
+}
 
+func (d *Dog) syncCommands() {
 	data := cmd.CommandsData()
-	for name, _ := range d.config.Boards {
+	for name := range d.config.Boards {
 		data = append(data, discord.MessageCommandCreate{
 			Name:                     fmt.Sprintf("Pin to %v", name),
 			DefaultMemberPermissions: json.NewNullablePtr[discord.Permissions](discord.PermissionManageChannels),

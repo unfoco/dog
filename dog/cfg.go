@@ -9,13 +9,14 @@ import (
 type Config struct {
 	Token  string            `json:"token"`
 	Admin  string            `json:"admin"`
+	Prefix string            `json:"prefix"`
 	Boards map[string]string `json:"boards"`
 }
 
 func DefaultConfig() Config {
 	return Config{
 		Token:  "your-token-here",
-		Boards: map[string]string{},
+		Prefix: "!",
 	}
 }
 
