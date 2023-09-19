@@ -14,10 +14,8 @@ type Config struct {
 
 func DefaultConfig() Config {
 	return Config{
-		Token: "your-token-here",
-		Boards: map[string]string{
-			"<:emoji:id>": "channel-id",
-		},
+		Token:  "your-token-here",
+		Boards: map[string]string{},
 	}
 }
 

@@ -2,12 +2,15 @@ package dog
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/disgoorg/disgo/bot"
+	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/handler"
+	"github.com/disgoorg/json"
 	"github.com/disgoorg/log"
 	"github.com/disgoorg/snowflake/v2"
 	"github.com/unfoco/dog/cmd"
@@ -43,16 +46,23 @@ func (d *Dog) Start() {
 
 func (d *Dog) initEvents() {
 	d.client.AddEventListeners(
-		bot.NewListenerFunc(d.onReactionAdd),
+		bot.NewListenerFunc(d.onMessageCommand),
 	)
 }
 
 func (d *Dog) initCommands() {
 	cmd.Register(cmd.New("test", "test command", nil, TestCommand{}, TestSubCommand{}))
+	cmd.Init(d.client, "!")
 
-	if err := handler.SyncCommands(d.client, cmd.CommandsData(), []snowflake.ID{snowflake.MustParse("1153049076644991047")}); err != nil {
-		log.Fatal("error while syncing commands: ", err)
+	data := cmd.CommandsData()
+	for name, _ := range d.config.Boards {
+		data = append(data, discord.MessageCommandCreate{
+			Name:                     fmt.Sprintf("Pin to %v", name),
+			DefaultMemberPermissions: json.NewNullablePtr[discord.Permissions](discord.PermissionManageChannels),
+		})
 	}
 
-	cmd.Init(d.client, "!")
+	if err := handler.SyncCommands(d.client, data, []snowflake.ID{snowflake.MustParse("1153049076644991047")}); err != nil {
+		log.Fatal("error while syncing commands: ", err)
+	}
 }

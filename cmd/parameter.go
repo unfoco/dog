@@ -35,7 +35,7 @@ type Enum interface {
 	// Options should return a list of options that show up on the client side. The command will ensure that
 	// the argument passed to the enum parameter will be equal to one of these options. The provided Source
 	// can also be used to change the enums for each player.
-	Options( /*source Source*/ ) []string
+	Options() []string
 }
 
 // SubCommand represents a subcommand that may be added as a static value that must be written. Adding

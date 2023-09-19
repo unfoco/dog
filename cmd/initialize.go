@@ -46,7 +46,12 @@ func onMessageCommand(event *events.MessageCreate) {
 }
 
 func onSlashCommand(event *events.ApplicationCommandInteractionCreate) {
-	args := slashToArgs(event.SlashCommandInteractionData())
+	data, ok := event.Data.(discord.SlashCommandInteractionData)
+	if !ok {
+		return
+	}
+
+	args := slashToArgs(data)
 	resp := onCommand(args[0], args[1:], &Context{
 		Client:    event.Client(),
 		GuildID:   *event.GuildID(),
@@ -60,7 +65,7 @@ func onCommand(name string, args []string, ctx *Context) (resp discord.MessageCr
 	cmd, ok := ByAlias(name)
 
 	if ok {
-		if out, err := cmd.Execute(strings.Join(args, " "), ctx); err != nil {
+		if out, err := cmd.Execute(ctx, strings.Join(args, " ")); err != nil {
 			resp = discord.NewMessageCreateBuilder().
 				SetContentf(err.Error()).
 				Build()
