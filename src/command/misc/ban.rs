@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use serenity::prelude::Mentionable;
+use ::serenity::prelude::Mentionable;
 
 use crate::types;
 
