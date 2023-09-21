@@ -18,10 +18,9 @@ pub async fn pin(
                     a.create_select_menu(|c| {
                         c.custom_id("pin_to_board");
                         c.options(|c| {
-                            for board in ctx.data().config.boards.iter() {
+                            for board in ctx.data().config.boards.keys() {
                                 c.create_option(|c| {
-                                    c.label(board.name.clone());
-                                    c.value(board.room.clone())
+                                    c.label(board).value(board)
                                 });
                             }
                             c
@@ -37,14 +36,10 @@ pub async fn pin(
             .filter(move |mci| mci.data.custom_id == "pin_to_board")
             .await
     {
-        let url: String = ctx.data().config.boards.iter()
-            .find_map(|x| {
-                if x.room == mci.data.values[0] {
-                    Some(x.webhook.clone())
-                } else {
-                    None
-                }
-            }).unwrap_or_default();
+        let url = ctx.data().config.boards
+            .get(&mci.data.values[0])
+            .cloned()
+            .unwrap_or_default();
 
         let webhook = serenity::Webhook::from_url(ctx, &url).await?;
 
