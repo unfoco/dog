@@ -3,11 +3,11 @@ use crate::types;
 #[poise::command(prefix_command, slash_command, required_permissions = "MANAGE_MESSAGES")]
 pub async fn purge(
     ctx: types::Context<'_>,
-    #[max = 50] count: u64,
+    #[max = 200] count: u64,
 ) -> Result<(), types::Error> {
 
-    if count > 50 {
-        ctx.reply("you can't purge more than 50 messages at once").await?;
+    if count > 200 {
+        ctx.reply("you can't purge more than 200 messages at once").await?;
         return Ok(())
     }
 
