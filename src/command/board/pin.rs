@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use serenity::json;
+use ::serenity::json;
 
 use crate::types;
 
