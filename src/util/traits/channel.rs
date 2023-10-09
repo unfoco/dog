@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use serenity::model::prelude::Message;
+use ::serenity::model::prelude::Message;
 use async_trait::async_trait;
 
 #[async_trait]
