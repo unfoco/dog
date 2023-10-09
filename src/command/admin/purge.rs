@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 use ::serenity::prelude::Mentionable;
 
 use crate::types;
+use crate::util::macros::log_sys;
 
 const LIMIT: u64 = 100;
 
@@ -117,15 +118,12 @@ async fn delete(
         c.ephemeral(true)
     }).await?;
 
-    ctx.data.log_sys(
-        ctx.http(),
-        format!(
-            "{} {} kanalında {} mesaj kaldırdı",
-            ctx.author(),
-            ctx.channel_id().mention(),
-            messages.len()
-        )
-    ).await?;
+    log_sys!(
+        "{} {} kanalında {} mesaj kaldırdı",
+        ctx.author(),
+        ctx.channel_id().mention(),
+        messages.len()
+    );
 
 
     let log_member = ctx.data.config.logs.member;
