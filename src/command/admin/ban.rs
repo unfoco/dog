@@ -1,6 +1,8 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
+
+use crate::util;
 use crate::util::macros::log_sys;
 use crate::util::traits::ExtendContext;
 
@@ -87,43 +89,16 @@ async fn unban(
     user: serenity::User,
     guild: serenity::Guild,
 ) -> Result<(), types::Error> {
-    ctx.send(|m| {
-        m.content("bu üye zaten banlı banı kaldırmak istiyor musunuz?")
-            .components(|c| {
-                c.create_action_row(|c| {
-                    c.create_button(|c| {
-                        c.custom_id("unban_button_yes");
-                        c.label("evet")
-                    });
-                    c.create_button(|c| {
-                        c.custom_id("unban_button_no");
-                        c.label("hayır")
-                    })
-                })
-            });
-        m.ephemeral(true)
-    }).await?;
+    let result = util::send_confirmation(
+        ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?"
+    ).await?;
 
-    while let Some(mci) =
-        serenity::CollectComponentInteraction::new(ctx.serenity_context())
-            .author_id(ctx.author().id)
-            .channel_id(ctx.channel_id())
-            .timeout(std::time::Duration::from_secs(120))
-            .await
-    {
-        match mci.data.custom_id.as_str() {
-            "unban_button_yes" => {
-                guild.unban(ctx.http(), &user).await?;
+    if result {
+        guild.unban(ctx.http(), &user).await?;
 
-                ctx.send_message(format!("{} adlı üyenin banı kaldırıldı", user)).await?;
+        ctx.send_message(format!("{} adlı üyenin banı kaldırıldı", user)).await?;
 
-                log_sys!(ctx, "{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author());
-            },
-            "unban_button_no" => {
-                mci.delete_original_interaction_response(ctx.http()).await?;
-            },
-            _ => {}
-        }
+        log_sys!(ctx, "{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())

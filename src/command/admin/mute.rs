@@ -2,6 +2,8 @@ use poise::serenity_prelude as serenity;
 use chrono;
 
 use crate::types;
+
+use crate::util;
 use crate::util::macros::log_sys;
 use crate::util::traits::ExtendContext;
 
@@ -37,6 +39,13 @@ async fn mute(
     ctx: types::AppContext<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
+    let guild = ctx.guild_id().unwrap();
+    let mut member = guild.member(ctx.http(), &user.id).await?;
+
+    if member.communication_disabled_until.is_some() {
+        return unmute(ctx, user, guild, member).await
+    }
+
     let Some(form) = ({
         poise::execute_modal(
             ctx,
@@ -50,9 +59,6 @@ async fn mute(
         return Ok(())
     };
 
-    let guild = ctx.guild_id().unwrap();
-    let mut member = guild.member(ctx.http(), &user.id).await?;
-
     member.disable_communication_until_datetime(
         ctx.http(),
         serenity::Timestamp::from(
@@ -65,4 +71,25 @@ async fn mute(
     log_sys!(ctx, "{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
 
     return Ok(())
+}
+
+async fn unmute(
+    ctx: types::AppContext<'_>,
+    user: serenity::User,
+    _guild: serenity::GuildId,
+    mut member: serenity::Member,
+) -> Result<(), types::Error> {
+    let result = util::send_confirmation(
+        ctx, "bu üye zaten susturulmuş susturmayı kaldırmak istiyor musunuz?"
+    ).await?;
+
+    if result {
+        member.enable_communication(ctx.http()).await?;
+
+        ctx.send_message(format!("{} adlı üyenin susturulması kaldırıldı", user)).await?;
+
+        log_sys!(ctx, "{} adlı üyenin susturulması {} tarafından kaldırıldı", user, ctx.author());
+    }
+
+    Ok(())
 }
