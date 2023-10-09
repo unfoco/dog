@@ -6,7 +6,7 @@ use crate::types;
 mod create;
 mod edit;
 
-#[poise::command(context_menu_command = "msg pin", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "msg pin", category = "admin", guild_only, hide_in_help)]
 pub async fn pin(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,

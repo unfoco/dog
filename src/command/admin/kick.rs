@@ -14,7 +14,7 @@ struct KickModal {
     reason: String,
 }
 
-#[poise::command(context_menu_command = "kick", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "kick", category = "admin", guild_only, hide_in_help)]
 pub async fn kick_user(
     ctx: types::AppContext<'_>,
     user: serenity::User,
@@ -22,7 +22,7 @@ pub async fn kick_user(
     kick(ctx, user).await
 }
 
-#[poise::command(context_menu_command = "user kick", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "user kick", category = "admin", guild_only, hide_in_help)]
 pub async fn kick_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,

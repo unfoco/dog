@@ -14,7 +14,7 @@ struct BanModal {
     reason: String,
 }
 
-#[poise::command(context_menu_command = "ban", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "ban", category = "admin", guild_only, hide_in_help)]
 pub async fn ban_user(
     ctx: types::AppContext<'_>,
     user: serenity::User,
@@ -22,7 +22,7 @@ pub async fn ban_user(
     ban(ctx, user).await
 }
 
-#[poise::command(context_menu_command = "user ban", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "user ban", category = "admin", guild_only, hide_in_help)]
 pub async fn ban_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
