@@ -19,7 +19,10 @@ pub async fn handle(
         return Ok(())
     };
 
-    if old_message.author.bot || old_message.content == new_message.content {
+    if old_message.guild_id.is_none()
+        || old_message.author.bot
+        || old_message.content == new_message.content
+    {
         return Ok(())
     }
 

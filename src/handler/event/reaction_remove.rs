@@ -12,6 +12,10 @@ pub async fn handle(
         return Ok(())
     };
 
+    if member.guild_id.is_none() {
+        return Ok(())
+    }
+
     let Some(user) = &member.user else {
         return Ok(())
     };
