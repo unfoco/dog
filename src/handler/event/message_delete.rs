@@ -18,6 +18,10 @@ pub async fn handle(
         return Ok(())
     };
 
+    if message.guild_id.is_none() {
+        return Ok(())
+    }
+
     if message.author.bot {
         return Ok(())
     }
