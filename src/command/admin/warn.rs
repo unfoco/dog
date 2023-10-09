@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 
 use crate::types;
 use crate::util::macros::log_sys;
+use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "warn"]
@@ -60,9 +61,7 @@ async fn warn(
     if let Some(role) = warn {
         member.add_role(ctx.http(), role).await?;
 
-        ctx.channel_id().send_message(ctx.http(), |c| {
-            c.content(format!("{} adlı üye uyarıldı", user))
-        }).await?;
+        ctx.send_message(format!("{} adlı üye uyarıldı", user)).await?;
 
         ctx.data.log_sys_with_embed(
             ctx.http(),
@@ -73,9 +72,9 @@ async fn warn(
         ).await?;
 
         if warns.iter().all(|r| member.roles.contains(r)) {
-            ctx.channel_id().send_message(ctx.http(), |c| {
-                c.content("üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur")
-            }).await?;
+            ctx.send_message(
+                "üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur"
+            ).await?;
 
             member.disable_communication_until_datetime(
                 ctx.http(),
