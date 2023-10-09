@@ -75,9 +75,7 @@ async fn ban(
         return Ok(())
     }
 
-    ctx.channel_id().send_message(ctx.http(), |c| {
-        c.content(format!("{} adlı üye banlandı", user))
-    }).await?;
+    ctx.send_message(format!("{} adlı üye banlandı", user)).await?;
 
     log_sys!("{} adlı üye {} tarafından banlandı", user, ctx.author());
 
@@ -117,9 +115,7 @@ async fn unban(
             "unban_button_yes" => {
                 guild.unban(ctx.http(), &user).await?;
 
-                ctx.channel_id().send_message(ctx.http(), |c| {
-                    c.content(format!("{} adlı üyenin banı kaldırıldı", user))
-                }).await?;
+                ctx.send_message(format!("{} adlı üyenin banı kaldırıldı", user)).await?;
 
                 log_sys!("{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author());
             },

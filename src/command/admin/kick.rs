@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 
 use crate::types;
 use crate::util::macros::log_sys;
+use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "kick"]
@@ -49,9 +50,7 @@ async fn kick(
 
     guild.kick_with_reason(ctx.http(), user.id, &form.reason).await?;
 
-    ctx.channel_id().send_message(ctx.http(), |c| {
-        c.content(format!("{} adlı üye kicklendi", user))
-    }).await?;
+    ctx.send_message(format!("{} adlı üye kicklendi", user)).await?;
 
     log_sys!("{} adlı üye {} tarafından kicklendi", user, ctx.author());
 

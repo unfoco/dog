@@ -59,9 +59,7 @@ async fn mute(
         ),
     ).await?;
 
-    ctx.channel_id().send_message(ctx.http(), |c| {
-        c.content(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration))
-    }).await?;
+    ctx.send(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration)).await?;
 
     log_sys!("{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
 
