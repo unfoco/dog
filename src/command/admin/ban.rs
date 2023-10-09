@@ -63,15 +63,14 @@ async fn ban(
     }) else {
         return Ok(())
     };
-
-    let member = guild.member(ctx.http(), &user.id).await?;
-
-    if let Err(_) = member.ban_with_reason(
-        ctx.http(), 0,
+    if let Err(_) = guild.ban_with_reason(
+        ctx.http(),
+        user.id,
+        0,
         &form.reason,
     ).await {
         ctx.send(|c| {
-            c.content("üye bulunamadığından veya yetkisi yüksek olduğundan banlanamadı");
+            c.content("üye banlanamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())

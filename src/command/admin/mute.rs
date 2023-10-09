@@ -40,7 +40,14 @@ async fn mute(
     user: serenity::User,
 ) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
-    let mut member = guild.member(ctx.http(), &user.id).await?;
+
+    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
+        ctx.send(|c| {
+            c.content("üye bulunamadığından susturulamadı");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    };
 
     if member.communication_disabled_until.is_some() {
         return unmute(ctx, user, guild, member).await
@@ -59,12 +66,18 @@ async fn mute(
         return Ok(())
     };
 
-    member.disable_communication_until_datetime(
+    if let Err(_) = member.disable_communication_until_datetime(
         ctx.http(),
         serenity::Timestamp::from(
             chrono::Utc::now() + duration_str::parse(&form.duration).unwrap()
         ),
-    ).await?;
+    ).await {
+        ctx.send(|c| {
+            c.content("üye mutelenemedi");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    }
 
     ctx.send_message(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration)).await?;
 

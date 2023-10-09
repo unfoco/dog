@@ -42,5 +42,6 @@ pub async fn send_confirmation(
         })
     }
 
+    reply.delete(types::Context::Application(ctx)).await?;
     Ok(false)
 }
