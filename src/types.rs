@@ -22,14 +22,21 @@ pub struct Data {
 
 impl Data {
 
-    pub async fn log_mem(&self, http: impl AsRef<serenity::Http>, content: impl ToString) -> serenity::Result<Message> {
+    pub async fn log_mem<H, C>(&self, http: H, content: C) -> serenity::Result<Message>
+        where
+            H: AsRef<serenity::Http>,
+            C: ToString
+    {
         self.config.logs.member.send_message(http, |c| {
             c.content(content)
         }).await
     }
 
-    pub async fn log_mem_with_embed<F>(&self, http: impl AsRef<serenity::Http>, content: impl ToString, f: F) -> serenity::Result<Message>
-        where F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed + Send + Sync
+    pub async fn log_mem_with_embed<H, C, F>(&self, http: H, content: C, f: F) -> serenity::Result<Message>
+        where
+            H: AsRef<serenity::Http>,
+            C: ToString,
+            F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed
     {
         self.config.logs.member.send_message(http, |c| {
             c.content(content);
@@ -37,14 +44,21 @@ impl Data {
         }).await
     }
 
-    pub async fn log_sys(&self, http: impl AsRef<serenity::Http>, content: impl ToString) -> serenity::Result<Message> {
+    pub async fn log_sys<H, C>(&self, http: H, content: C) -> serenity::Result<Message>
+        where
+            H: AsRef<serenity::Http>,
+            C: ToString
+    {
         self.config.logs.system.send_message(http, |c| {
             c.content(content)
         }).await
     }
 
-    pub async fn log_sys_with_embed<F>(&self, http: impl AsRef<serenity::Http>, content: impl ToString, f: F) -> serenity::Result<Message>
-        where F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed + Send + Sync
+    pub async fn log_sys_with_embed<H, C, F>(&self, http: H, content: C, f: F) -> serenity::Result<Message>
+        where
+            H: AsRef<serenity::Http>,
+            C: ToString,
+            F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed
     {
         self.config.logs.system.send_message(http, |c| {
             c.content(content);
