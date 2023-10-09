@@ -1,6 +1,8 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
+use crate::util::traits::ExtendContext;
+use crate::util::macros::log_sys;
 
 #[derive(Debug, poise::Modal)]
 #[name = "ban"]
@@ -77,10 +79,7 @@ async fn ban(
         c.content(format!("{} adlı üye banlandı", user))
     }).await?;
 
-    ctx.data.log_sys(
-        ctx.http(),
-        format!("{} adlı üye {} tarafından banlandı", user, ctx.author())
-    ).await?;
+    log_sys!("{} adlı üye {} tarafından banlandı", user, ctx.author());
 
     return Ok(())
 }
@@ -122,10 +121,7 @@ async fn unban(
                     c.content(format!("{} adlı üyenin banı kaldırıldı", user))
                 }).await?;
 
-                ctx.data.log_sys(
-                    ctx.http(),
-                    format!("{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author())
-                ).await?;
+                log_sys!("{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author());
             },
             "unban_button_no" => {
                 mci.delete_original_interaction_response(ctx.http()).await?;

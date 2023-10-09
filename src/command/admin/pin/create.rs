@@ -3,6 +3,7 @@ use ::serenity::prelude::Mentionable;
 use ::serenity::json;
 
 use crate::types;
+use crate::util::macros::log_sys;
 
 pub async fn handle(
     ctx: types::AppContext<'_>,
@@ -85,15 +86,12 @@ pub async fn handle(
             )
         ).await?;
 
-        ctx.data.log_sys(
-            ctx.http(),
-            format!(
-                "{} {} mesajını {} adlı panoya pinledi",
-                ctx.author(),
-                msg.link(),
-                board.channel.mention(),
-            )
-        ).await?;
+        log_sys!(
+            "{} {} mesajını {} adlı panoya pinledi",
+            ctx.author(),
+            msg.link(),
+            board.channel.mention()
+        );
     }
     Ok(())
 }

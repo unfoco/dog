@@ -1,6 +1,7 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
+use crate::util::macros::log_sys;
 
 #[derive(Debug, poise::Modal)]
 #[name = "kick"]
@@ -52,10 +53,7 @@ async fn kick(
         c.content(format!("{} adlı üye kicklendi", user))
     }).await?;
 
-    ctx.data.log_sys(
-        ctx.http(),
-        format!("{} adlı üye {} tarafından kicklendi", user, ctx.author())
-    ).await?;
+    log_sys!("{} adlı üye {} tarafından kicklendi", user, ctx.author());
 
     return Ok(())
 }

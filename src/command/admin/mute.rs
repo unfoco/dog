@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 use chrono;
 
 use crate::types;
+use crate::util::macros::log_sys;
 
 #[derive(Debug, poise::Modal)]
 #[name = "mute"]
@@ -62,10 +63,7 @@ async fn mute(
         c.content(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration))
     }).await?;
 
-    ctx.data.log_sys(
-        ctx.http(),
-        format!("{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author())
-    ).await?;
+    log_sys!("{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
 
     return Ok(())
 }

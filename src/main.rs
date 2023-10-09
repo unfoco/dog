@@ -5,6 +5,7 @@ mod command;
 mod handler;
 mod config;
 mod types;
+mod util;
 
 #[tokio::main]
 async fn main() -> Result<(), types::Error> {
