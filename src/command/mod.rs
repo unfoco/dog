@@ -1,10 +1,9 @@
 use crate::types;
 
-mod misc;
-mod board;
+mod admin;
 
 pub fn list() -> types::CommandVec {
-    vec![misc::commands(), board::commands()]
+    vec![admin::commands()]
         .into_iter()
         .flatten()
         .collect()
