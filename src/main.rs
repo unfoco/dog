@@ -15,9 +15,7 @@ async fn main() -> Result<(), types::Error> {
 
     poise::Framework::builder()
         .token(config.token.clone())
-        .options(options(
-            config.prefix.clone()
-        ))
+        .options(options())
         .intents(
             serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
         )
@@ -29,11 +27,10 @@ async fn main() -> Result<(), types::Error> {
     Ok(())
 }
 
-fn options(prefix: String) -> types::FrameworkOptions {
+fn options() -> types::FrameworkOptions {
     poise::FrameworkOptions {
         commands: command::list(),
         prefix_options: poise::PrefixFrameworkOptions {
-            prefix: Some(prefix),
             edit_tracker: Some(poise::EditTracker::for_timespan(
                 Duration::from_secs(3600)
             )),

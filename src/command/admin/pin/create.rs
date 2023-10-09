@@ -1,18 +1,16 @@
 use poise::serenity_prelude as serenity;
+use ::serenity::prelude::Mentionable;
 use ::serenity::json;
 
 use crate::types;
 
-#[poise::command(context_menu_command = "Pin to Board", required_permissions = "MANAGE_CHANNELS", hide_in_help)]
-pub async fn pin(
-    ctx: types::Context<'_>,
-    #[description = "Pins message to a board"] msg: serenity::Message,
+pub async fn handle(
+    ctx: types::AppContext<'_>,
+    msg: serenity::Message,
 ) -> Result<(), types::Error> {
 
-    ctx.defer_ephemeral().await?;
-
     ctx.send(|m| {
-        m.content("select a board to pin the message")
+        m.content("mesajı pinlemek istediğiniz panoyu seçiniz")
             .components(|c| {
                 c.create_action_row(|a| {
                     a.create_select_menu(|c| {
@@ -27,28 +25,31 @@ pub async fn pin(
                         })
                     })
                 })
-            })
+            });
+        m.ephemeral(true)
     }).await?;
 
     while let Some(mci) =
-        poise::serenity_prelude::CollectComponentInteraction::new(ctx.serenity_context())
+        serenity::CollectComponentInteraction::new(ctx.serenity_context())
+            .author_id(ctx.author().id)
+            .channel_id(ctx.channel_id())
             .timeout(std::time::Duration::from_secs(120))
             .filter(move |mci| mci.data.custom_id == "pin_to_board")
             .await
     {
-        let url = ctx.data().config.boards
+        let board = ctx.data().config.boards
             .get(&mci.data.values[0])
             .cloned()
-            .unwrap_or_default();
+            .unwrap();
 
-        let webhook = serenity::Webhook::from_url(ctx, &url).await?;
+        let webhook = board.webhook(ctx.http()).await?;
 
-        let member = ctx.guild().unwrap().member(ctx, msg.author.id).await?;
+        let member = ctx.guild().unwrap().member(ctx.http(), msg.author.id).await?;
 
         let name = member.display_name().clone();
         let avatar = member.avatar_url().unwrap_or_else(|| msg.author.avatar_url().unwrap());
 
-        webhook.execute(ctx, true, |w| {
+        webhook.execute(ctx.http(), true, |w| {
             w.username(&name).avatar_url(&avatar).content(msg.content.clone());
 
             for attachment in &msg.attachments {
@@ -63,21 +64,36 @@ pub async fn pin(
 
             embeds.push(
                 serenity::Embed::fake(|e| {
-                    e.field("source", msg.link(), true)
+                    e.field("kaynak", msg.link(), true)
                 })
             );
 
             w.embeds(embeds)
         }).await.expect("unable to send message");
 
-        mci.create_interaction_response(ctx, |c| {
+        mci.create_interaction_response(ctx.http(), |c| {
             c.kind(serenity::InteractionResponseType::UpdateMessage)
         }).await?;
 
-        mci.edit_original_interaction_response(ctx, |e| {
-            e.content("pinned message to board")
-                .components(|c| {c.0.clear(); c})
-        }).await?;
+        mci.delete_original_interaction_response(ctx.http()).await?;
+
+        msg.reply(
+            ctx.http(),
+            format!(
+                "mesaj {} adlı panoya pinlendi",
+                board.channel.mention(),
+            )
+        ).await?;
+
+        ctx.data.log_sys(
+            ctx.http(),
+            format!(
+                "{} {} mesajını {} adlı panoya pinledi",
+                ctx.author(),
+                msg.link(),
+                board.channel.mention(),
+            )
+        ).await?;
     }
     Ok(())
 }
