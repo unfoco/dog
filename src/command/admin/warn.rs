@@ -34,6 +34,16 @@ async fn warn(
     ctx: types::AppContext<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
+    let guild = ctx.guild_id().unwrap();
+
+    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
+        ctx.send(|c| {
+            c.content("üye bulunamadından uyarılamadı");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    };
+
     let Some(form) = ({
         poise::execute_modal(ctx,
             Some(WarnModal{
@@ -44,9 +54,6 @@ async fn warn(
     }) else {
         return Ok(())
     };
-
-    let guild = ctx.guild_id().unwrap();
-    let mut member = guild.member(ctx.http(), &user.id).await?;
 
     let warns = &ctx.data.config.warns;
 
