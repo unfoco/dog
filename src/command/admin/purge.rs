@@ -134,10 +134,13 @@ async fn delete(
         messages.len()
     );
 
-
     let log_member = ctx.data.config.logs.member;
 
     for message in messages {
+        if message.author.bot {
+            continue
+        }
+
         log_member.send_message(ctx.http(), |c| {
             c.content(format!(
                 "{} kanalında {} tarafından gönderilen bir mesaj silindi",
