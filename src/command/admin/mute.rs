@@ -3,6 +3,7 @@ use chrono;
 
 use crate::types;
 use crate::util::macros::log_sys;
+use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "mute"]
@@ -59,9 +60,9 @@ async fn mute(
         ),
     ).await?;
 
-    ctx.send(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration)).await?;
+    ctx.send_message(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration)).await?;
 
-    log_sys!("{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
+    log_sys!(ctx, "{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
 
     return Ok(())
 }

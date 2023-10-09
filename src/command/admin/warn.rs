@@ -15,28 +15,18 @@ struct WarnModal {
 }
 
 #[poise::command(context_menu_command = "warn", category = "admin", hide_in_help)]
-pub async fn warn_user(
-    ctx: types::AppContext<'_>,
-    user: serenity::User,
-) -> Result<(), types::Error> {
+pub async fn warn_user(ctx: types::AppContext<'_>, user: serenity::User, ) -> Result<(), types::Error> {
     warn(ctx, user).await
 }
 
 #[poise::command(context_menu_command = "user warn", category = "admin", hide_in_help)]
-pub async fn warn_message(
-    ctx: types::AppContext<'_>,
-    msg: serenity::Message,
-) -> Result<(), types::Error> {
+pub async fn warn_message(ctx: types::AppContext<'_>, msg: serenity::Message, ) -> Result<(), types::Error> {
     warn(ctx, msg.author).await
 }
 
-async fn warn(
-    ctx: types::AppContext<'_>,
-    user: serenity::User,
-) -> Result<(), types::Error> {
+async fn warn(ctx: types::AppContext<'_>, user: serenity::User, ) -> Result<(), types::Error> {
     let Some(form) = ({
-        poise::execute_modal(
-            ctx,
+        poise::execute_modal(ctx,
             Some(WarnModal{
                 reason: format!("@{} adlı üyenin warn sebebi", user.name)
             }),
@@ -48,6 +38,7 @@ async fn warn(
 
     let guild = ctx.guild_id().unwrap();
     let mut member = guild.member(ctx.http(), &user.id).await?;
+
     let warns = &ctx.data.config.warns;
 
     let warn = warns.iter().find_map(|role| {
@@ -83,7 +74,7 @@ async fn warn(
                 ),
             ).await?;
 
-            log_sys!("{} adlı üyenin cezasına karar veriniz here", user);
+            log_sys!(ctx, "{} adlı üyenin cezasına karar veriniz here", user);
         }
     }
 

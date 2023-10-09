@@ -52,7 +52,7 @@ async fn kick(
 
     ctx.send_message(format!("{} adlı üye kicklendi", user)).await?;
 
-    log_sys!("{} adlı üye {} tarafından kicklendi", user, ctx.author());
+    log_sys!(ctx, "{} adlı üye {} tarafından kicklendi", user, ctx.author());
 
     return Ok(())
 }

@@ -299,6 +299,7 @@ dependencies = [
 name = "dog"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "chrono",
  "duration-str",
  "env_logger",
