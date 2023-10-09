@@ -2,6 +2,7 @@ use poise::serenity_prelude as serenity;
 use ::serenity::json;
 
 use crate::types;
+use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "pini düzenle"]
@@ -93,8 +94,7 @@ pub async fn handle(
         e.embeds(embeds)
     }).await?;
 
-    ctx.data.log_sys_with_embed(
-        ctx.http(),
+    ctx.log_sys_with_embed(
         format!(
             "{} {} pinini düzenledi",
             ctx.author(),

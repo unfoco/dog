@@ -14,7 +14,7 @@ struct WarnModal {
     reason: String,
 }
 
-#[poise::command(context_menu_command = "warn", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "warn", category = "admin", guild_only, hide_in_help)]
 pub async fn warn_user(
     ctx: types::AppContext<'_>,
     user: serenity::User,
@@ -22,7 +22,7 @@ pub async fn warn_user(
     warn(ctx, user).await
 }
 
-#[poise::command(context_menu_command = "user warn", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "user warn", category = "admin", guild_only, hide_in_help)]
 pub async fn warn_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
@@ -63,8 +63,7 @@ async fn warn(
 
         ctx.send_message(format!("{} adlı üye uyarıldı", user)).await?;
 
-        ctx.data.log_sys_with_embed(
-            ctx.http(),
+        ctx.log_sys_with_embed(
             format!("{} adlı üye uyarıldı", user),
             |c| {
                 c.field("sebep", form.reason, true)

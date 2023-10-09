@@ -6,7 +6,7 @@ use crate::util::macros::log_sys;
 
 const LIMIT: u64 = 100;
 
-#[poise::command(slash_command, category = "admin")]
+#[poise::command(slash_command, category = "admin", guild_only)]
 pub async fn purge(
     ctx: types::AppContext<'_>,
     #[max = 100] count: u64,
@@ -20,7 +20,7 @@ pub async fn purge(
     delete(ctx, messages).await
 }
 
-#[poise::command(context_menu_command = "msg purge", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "msg purge", category = "admin", guild_only, hide_in_help)]
 pub async fn purge_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
@@ -30,14 +30,14 @@ pub async fn purge_message(
     };
 
     let Some((before, after)) = form.parse() else {
-        let messages = ctx.channel_id()
+        let mut messages = ctx.channel_id()
             .messages(ctx.http(), |g| {
                 g.after(&msg).limit(101)
             })
             .await?;
 
         if messages.len() <= LIMIT as usize {
-            msg.delete(ctx.http()).await?;
+            messages.push(msg);
             delete(ctx, messages).await?;
         }
 
@@ -49,18 +49,27 @@ pub async fn purge_message(
         return Ok(())
     }
 
-    let mut messages_before = ctx.channel_id()
-        .messages(ctx.http(), |g| {
-            g.before(&msg).limit(before)
-        })
-        .await?;
-    let mut messages_after = ctx.channel_id()
-        .messages(ctx.http(), |g| {
-            g.before(&msg).limit(after)
-        })
-        .await?;
+    let mut messages_before = if before > 0 {
+        ctx.channel_id()
+            .messages(ctx.http(), |g| {
+                g.before(&msg).limit(before)
+            })
+            .await?
+    } else {
+        vec![]
+    };
+    let mut messages_after = if after > 0 {
+        ctx.channel_id()
+            .messages(ctx.http(), |g| {
+                g.after(&msg).limit(after)
+            })
+            .await?
+    } else {
+        vec![]
+    };
 
     messages_before.append(&mut messages_after);
+    messages_before.push(msg);
 
     delete(ctx, messages_before).await
 }

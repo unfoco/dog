@@ -17,7 +17,7 @@ struct MuteModal {
     duration: String,
 }
 
-#[poise::command(context_menu_command = "mute", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "mute", category = "admin", guild_only, hide_in_help)]
 pub async fn mute_user(
     ctx: types::AppContext<'_>,
     user: serenity::User,
@@ -25,7 +25,7 @@ pub async fn mute_user(
     mute(ctx, user).await
 }
 
-#[poise::command(context_menu_command = "user mute", category = "admin", hide_in_help)]
+#[poise::command(context_menu_command = "user mute", category = "admin", guild_only, hide_in_help)]
 pub async fn mute_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
