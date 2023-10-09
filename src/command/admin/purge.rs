@@ -118,7 +118,7 @@ async fn delete(
         c.ephemeral(true)
     }).await?;
 
-    log_sys!(
+    log_sys!(ctx,
         "{} {} kanalında {} mesaj kaldırdı",
         ctx.author(),
         ctx.channel_id().mention(),

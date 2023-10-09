@@ -86,7 +86,7 @@ pub async fn handle(
             )
         ).await?;
 
-        log_sys!(
+        log_sys!(ctx,
             "{} {} mesajını {} adlı panoya pinledi",
             ctx.author(),
             msg.link(),
