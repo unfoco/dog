@@ -43,7 +43,7 @@ async fn mute(
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
         ctx.send(|c| {
-            c.content("üye bulunamadığından susturulamadı");
+            c.content("üye bulunamadığından mutelenemedi");
             c.ephemeral(true)
         }).await?;
         return Ok(())
@@ -57,7 +57,7 @@ async fn mute(
         poise::execute_modal(
             ctx,
             Some(MuteModal {
-                reason: format!("@{} adlı üyenin mute sebebi", user.name),
+                reason: format!("@{} mute sebebi", user.name),
                 duration: "".to_string(),
             }),
             None
@@ -79,9 +79,9 @@ async fn mute(
         return Ok(())
     }
 
-    ctx.send_message(format!("{} adlı üye {} süreliğine mutelendi", user, &form.duration)).await?;
+    ctx.send_message(format!("{} {} süreliğine mutelendi", user, &form.duration)).await?;
 
-    log_sys!(ctx, "{} adlı üye {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
+    log_sys!(ctx, "{} {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
 
     return Ok(())
 }
@@ -92,16 +92,16 @@ async fn unmute(
     _guild: serenity::GuildId,
     mut member: serenity::Member,
 ) -> Result<(), types::Error> {
-    let result = util::send_confirmation(
+    let result = util::interactions::send_confirm(
         ctx, "bu üye zaten susturulmuş susturmayı kaldırmak istiyor musunuz?"
     ).await?;
 
     if result {
         member.enable_communication(ctx.http()).await?;
 
-        ctx.send_message(format!("{} adlı üyenin susturulması kaldırıldı", user)).await?;
+        ctx.send_message(format!("{} mutelenmesi kaldırıldı", user)).await?;
 
-        log_sys!(ctx, "{} adlı üyenin susturulması {} tarafından kaldırıldı", user, ctx.author());
+        log_sys!(ctx, "{} mutelenmesi {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())

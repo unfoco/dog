@@ -25,25 +25,28 @@ pub async fn handle_setup(
 
     let guild = serenity::GuildId(1153049076644991047);
 
-    poise::builtins::register_in_guild(
-        ctx, &slash,
-        guild
-    ).await?;
+    for _ in 1..=5 {
+        let Some(command) = menu.pop() else {
+            continue
+        };
+        slash.push(command)
+    }
 
     poise::builtins::register_in_guild(
-        ctx, &menu[..5],
+        ctx, &slash[..],
         guild
     ).await?;
 
     poise::builtins::register_globally(
-        ctx, &menu[5..]
+        ctx, &menu[..]
     ).await?;
 
     ctx.cache.set_max_messages(100);
 
-    ctx.set_activity(serenity::Activity::watching("u")).await;
-    //poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-    println!("Logged in as {}", ready.user.name);
+    ctx.set_presence(None, serenity::OnlineStatus::DoNotDisturb).await;
+
+    println!("logged in as {}", ready.user.name);
+
     Ok(types::Data {
         config
     })
