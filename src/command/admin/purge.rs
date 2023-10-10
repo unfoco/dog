@@ -143,7 +143,7 @@ async fn delete(
 
         log_member.send_message(ctx.http(), |c| {
             c.content(format!(
-                "{} kanalında {} tarafından gönderilen bir mesaj silindi",
+                "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
                 ctx.channel_id().mention(),
                 message.author,
             ));

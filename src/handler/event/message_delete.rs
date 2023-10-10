@@ -22,11 +22,13 @@ pub async fn handle(
         return Ok(())
     }
 
-    if message.author.bot {
+    let logs = &data.config.logs;
+
+    if *channel_id == logs.member || *channel_id == logs.system {
         return Ok(())
     }
 
-    let log = data.config.logs.member;
+    let log = logs.member;
 
     log.send_message(ctx, |c| {
         c.content(format!(

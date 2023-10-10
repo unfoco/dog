@@ -56,7 +56,7 @@ async fn ban(
         poise::execute_modal(
             ctx,
             Some(BanModal {
-                reason: format!("@{} adlı üyenin ban sebebi", user.name),
+                reason: format!("@{} ban sebebi", user.name),
             }),
             None
         ).await?
@@ -76,9 +76,9 @@ async fn ban(
         return Ok(())
     }
 
-    ctx.send_message(format!("{} adlı üye banlandı", user)).await?;
+    ctx.send_message(format!("{} banlandı", user)).await?;
 
-    log_sys!(ctx, "{} adlı üye {} tarafından banlandı", user, ctx.author());
+    log_sys!(ctx, "{} {} tarafından banlandı", user, ctx.author());
 
     return Ok(())
 }
@@ -88,16 +88,16 @@ async fn unban(
     user: serenity::User,
     guild: serenity::Guild,
 ) -> Result<(), types::Error> {
-    let result = util::send_confirmation(
+    let result = util::interactions::send_confirm(
         ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?"
     ).await?;
 
     if result {
         guild.unban(ctx.http(), &user).await?;
 
-        ctx.send_message(format!("{} adlı üyenin banı kaldırıldı", user)).await?;
+        ctx.send_message(format!("{} banı kaldırıldı", user)).await?;
 
-        log_sys!(ctx, "{} adlı üyenin banı {} tarafından kaldırıldı", user, ctx.author());
+        log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())

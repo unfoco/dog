@@ -47,7 +47,7 @@ async fn warn(
     let Some(form) = ({
         poise::execute_modal(ctx,
             Some(WarnModal{
-                reason: format!("@{} adlı üyenin warn sebebi", user.name)
+                reason: format!("@{} warn sebebi", user.name)
             }),
             None
         ).await?
@@ -57,41 +57,79 @@ async fn warn(
 
     let warns = &ctx.data.config.warns;
 
-    let warn = warns.iter().find_map(|role| {
+    let Some(role) = warns.iter().find_map(|role| {
         if !member.roles.contains(role) {
             Some(role)
         } else {
             None
         }
-    });
+    }) else {
+        ctx.send(|c| {
+            c.content("üye zaten yeterince uyarı aldı");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    };
 
-    if let Some(role) = warn {
-        member.add_role(ctx.http(), role).await?;
+    member.add_role(ctx.http(), role).await?;
 
-        ctx.send_message(format!("{} adlı üye uyarıldı", user)).await?;
+    ctx.send_message(format!("{} uyarıldı", user)).await?;
 
-        ctx.log_sys_with_embed(
-            format!("{} adlı üye uyarıldı", user),
-            |c| {
-                c.field("sebep", form.reason, true)
-            }
+    ctx.log_sys_with_embed(
+        format!("{} uyarıldı", user),
+        |c| {
+            c.field("sebep", form.reason, true)
+        }
+    ).await?;
+
+    if warns.iter().all(|r| member.roles.contains(r)) {
+        ctx.send_message(
+            "üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur"
         ).await?;
 
-        if warns.iter().all(|r| member.roles.contains(r)) {
-            ctx.send_message(
-                "üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur"
-            ).await?;
-
-            member.disable_communication_until_datetime(
-                ctx.http(),
-                serenity::Timestamp::from(
-                    chrono::Utc::now() + duration_str::parse("24d").unwrap()
-                ),
-            ).await?;
-
-            log_sys!(ctx, "{} adlı üyenin cezasına karar veriniz here", user);
+        if let Some(time) = member.communication_disabled_until {
+            log_sys!(ctx, "{} eski mutenin bitmesine <t:{}:R>", user, time.timestamp());
         }
+
+        member.disable_communication_until_datetime(
+            ctx.http(),
+            serenity::Timestamp::from(
+                chrono::Utc::now() + duration_str::parse("24d").unwrap()
+            ),
+        ).await?;
+
+        log_sys!(ctx, "{} cezasına karar veriniz here", user);
     }
 
-    return Ok(())
+    Ok(())
+}
+
+#[poise::command(slash_command, category = "admin", guild_only)]
+pub async fn unwarn(
+    ctx: types::AppContext<'_>,
+    mut member: serenity::Member,
+) -> Result<(), types::Error> {
+    let warns = ctx.data.config.warns.clone();
+
+    let Some(role) = warns.iter().rev().find_map(|role| {
+        if member.roles.contains(role) {
+            Some(role)
+        } else {
+            None
+        }
+    }) else {
+        ctx.send(|c| {
+            c.content("üye hiç uyarı almamış");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    };
+
+    member.remove_role(ctx.http(), role).await?;
+
+    ctx.send_message(format!("{} bir uyarısı kaldırıldı", member)).await?;
+
+    log_sys!(ctx, "{} bir uyarısı {} tarafından kaldırıldı", member, ctx.author());
+
+    Ok(())
 }
