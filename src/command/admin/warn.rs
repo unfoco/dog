@@ -76,7 +76,7 @@ async fn warn(
     ctx.send_message(format!("{} uyarıldı", user)).await?;
 
     ctx.log_sys_with_embed(
-        format!("{} uyarıldı", user),
+        format!("{} {} tarafından uyarıldı", ctx.author(), user),
         |c| {
             c.field("sebep", form.reason, true)
         }
@@ -88,7 +88,7 @@ async fn warn(
         ).await?;
 
         if let Some(time) = member.communication_disabled_until {
-            log_sys!(ctx, "{} eski mutenin bitmesine <t:{}:R>", user, time.timestamp());
+            log_sys!(ctx, "{} eski mutesinin bitmesine <t:{}:R>", user, time.timestamp());
         }
 
         member.disable_communication_until_datetime(
@@ -98,7 +98,7 @@ async fn warn(
             ),
         ).await?;
 
-        log_sys!(ctx, "{} cezasına karar veriniz here", user);
+        log_sys!(ctx, "{} cezasına karar veriniz @here", user);
     }
 
     Ok(())
