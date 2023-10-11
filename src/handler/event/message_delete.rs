@@ -32,7 +32,7 @@ pub async fn handle(
 
     log.send_message(ctx, |c| {
         c.content(format!(
-            "{} kanalında {} tarafından gönderilen bir mesaj silindi",
+            "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
             channel_id.mention(),
             message.author,
         ));
