@@ -79,9 +79,9 @@ async fn mute(
         return Ok(())
     }
 
-    ctx.send_message(format!("{} {} süreliğine mutelendi", user, &form.duration)).await?;
+    ctx.send_message(format!("{} {} süreliğine susturuldu", user, &form.duration)).await?;
 
-    log_sys!(ctx, "{} {} süreliğine {} tarafından mutelendi", user, &form.duration, ctx.author());
+    log_sys!(ctx, "{} {} süreliğine {} tarafından susturuldu", user, &form.duration, ctx.author());
 
     return Ok(())
 }
