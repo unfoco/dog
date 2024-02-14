@@ -76,7 +76,7 @@ async fn warn(
     ctx.send_message(format!("{} uyarıldı", user)).await?;
 
     ctx.log_sys_with_embed(
-        format!("{} {} tarafından uyarıldı", ctx.author(), user),
+        format!("{} {} tarafından uyarıldı", user,ctx.author()),
         |c| {
             c.field("sebep", form.reason, true)
         }
@@ -104,11 +104,36 @@ async fn warn(
     Ok(())
 }
 
-#[poise::command(slash_command, category = "admin", guild_only)]
+#[poise::command(context_menu_command = "unwarn", category = "admin", guild_only, hide_in_help)]
+pub async fn unwarn_user(
+    ctx: types::AppContext<'_>,
+    user: serenity::User,
+) -> Result<(), types::Error> {
+    unwarn(ctx, user).await
+}
+
+#[poise::command(context_menu_command = "user unwarn", category = "admin", guild_only, hide_in_help)]
+pub async fn unwarn_message(
+    ctx: types::AppContext<'_>,
+    msg: serenity::Message,
+) -> Result<(), types::Error> {
+    unwarn(ctx, msg.author).await
+}
+
 pub async fn unwarn(
     ctx: types::AppContext<'_>,
-    mut member: serenity::Member,
+    user: serenity::User,
 ) -> Result<(), types::Error> {
+    let guild = ctx.guild_id().unwrap();
+    
+    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
+        ctx.send(|c| {
+            c.content("üye bulunamadından uyarı kaldırılamadı");
+            c.ephemeral(true)
+        }).await?;
+        return Ok(())
+    };
+
     let warns = ctx.data.config.warns.clone();
 
     let Some(role) = warns.iter().rev().find_map(|role| {

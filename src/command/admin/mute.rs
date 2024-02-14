@@ -43,7 +43,7 @@ async fn mute(
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
         ctx.send(|c| {
-            c.content("üye bulunamadığından mutelenemedi");
+            c.content("üye bulunamadığından susturulamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
@@ -57,7 +57,7 @@ async fn mute(
         poise::execute_modal(
             ctx,
             Some(MuteModal {
-                reason: format!("@{} mute sebebi", user.name),
+                reason: format!("@{} susturma sebebi", user.name),
                 duration: "".to_string(),
             }),
             None
@@ -73,7 +73,7 @@ async fn mute(
         ),
     ).await {
         ctx.send(|c| {
-            c.content("üye mutelenemedi");
+            c.content("üye susturulmadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
@@ -99,9 +99,9 @@ async fn unmute(
     if result {
         member.enable_communication(ctx.http()).await?;
 
-        ctx.send_message(format!("{} mutelenmesi kaldırıldı", user)).await?;
+        ctx.send_message(format!("{} susturması kaldırıldı", user)).await?;
 
-        log_sys!(ctx, "{} mutelenmesi {} tarafından kaldırıldı", user, ctx.author());
+        log_sys!(ctx, "{} susturması {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())
