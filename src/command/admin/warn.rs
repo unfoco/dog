@@ -38,7 +38,7 @@ async fn warn(
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
         ctx.send(|c| {
-            c.content("üye bulunamadından uyarılamadı");
+            c.content("üye bulunamadığından uyarılamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
@@ -47,7 +47,7 @@ async fn warn(
     let Some(form) = ({
         poise::execute_modal(ctx,
             Some(WarnModal{
-                reason: format!("@{} warn sebebi", user.name)
+                reason: format!("@{} uyarı sebebi", user.name)
             }),
             None
         ).await?
@@ -128,7 +128,7 @@ pub async fn unwarn(
     
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
         ctx.send(|c| {
-            c.content("üye bulunamadından uyarı kaldırılamadı");
+            c.content("üye bulunamadığından uyarı kaldırılamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
