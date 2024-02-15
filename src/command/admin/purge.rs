@@ -123,12 +123,12 @@ async fn delete(
         .await?;
 
     ctx.send(|c| {
-        c.content(format!("{} mesaj kaldırıldı", messages.len()));
+        c.content(format!("{} mesaj silindi", messages.len()));
         c.ephemeral(true)
     }).await?;
 
     log_sys!(ctx,
-        "{} {} kanalında {} mesaj kaldırdı",
+        "{} {} kanalında {} mesaj silindi",
         ctx.author(),
         ctx.channel_id().mention(),
         messages.len()
@@ -143,7 +143,7 @@ async fn delete(
 
         log_member.send_message(ctx.http(), |c| {
             c.content(format!(
-                "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
+                "{} kanalında {} tarafından gönderilen bir mesaj silindi",
                 ctx.channel_id().mention(),
                 message.author,
             ));

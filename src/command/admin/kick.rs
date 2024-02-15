@@ -36,7 +36,7 @@ async fn kick(
 ) -> Result<(), types::Error> {
     if user.member.is_none() {
         ctx.send(|c| {
-            c.content("üye bulunamadığından kicklenemedi");
+            c.content("üye bulunamadığından atılamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
@@ -46,7 +46,7 @@ async fn kick(
         poise::execute_modal(
             ctx,
             Some(KickModal{
-                reason: format!("@{} kick sebebi", user.name)
+                reason: format!("@{} atılma sebebi", user.name)
             }),
             None
         ).await?
@@ -58,9 +58,9 @@ async fn kick(
 
     guild.kick_with_reason(ctx.http(), user.id, &form.reason).await?;
 
-    ctx.send_message(format!("{} kicklendi", user)).await?;
+    ctx.send_message(format!("{} atıldı", user)).await?;
 
-    log_sys!(ctx, "{} {} tarafından kicklendi", user, ctx.author());
+    log_sys!(ctx, "{} {} tarafından atıldı", user, ctx.author());
 
     return Ok(())
 }
