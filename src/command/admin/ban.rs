@@ -56,7 +56,7 @@ async fn ban(
         poise::execute_modal(
             ctx,
             Some(BanModal {
-                reason: format!("@{} ban sebebi", user.name),
+                reason: format!("@{} yasaklanma sebebi", user.name),
             }),
             None
         ).await?
@@ -70,15 +70,15 @@ async fn ban(
         &form.reason,
     ).await {
         ctx.send(|c| {
-            c.content("üye banlanamadı");
+            c.content("üye yasaklanamadı");
             c.ephemeral(true)
         }).await?;
         return Ok(())
     }
 
-    ctx.send_message(format!("{} banlandı", user)).await?;
+    ctx.send_message(format!("{} yasaklandı", user)).await?;
 
-    log_sys!(ctx, "{} {} tarafından banlandı", user, ctx.author());
+    log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
 
     return Ok(())
 }
