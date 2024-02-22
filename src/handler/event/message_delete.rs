@@ -1,5 +1,5 @@
-use poise::serenity_prelude as serenity;
 use ::serenity::prelude::Mentionable;
+use poise::serenity_prelude as serenity;
 
 use crate::types;
 
@@ -10,22 +10,21 @@ pub async fn handle(
     channel_id: &serenity::ChannelId,
     message_id: &serenity::MessageId,
     _guild_id: &Option<serenity::GuildId>,
-
 ) -> Result<(), types::Error> {
     let message = ctx.cache.message(channel_id, message_id);
 
     let Some(message) = message else {
-        return Ok(())
+        return Ok(());
     };
 
     if message.guild_id.is_none() {
-        return Ok(())
+        return Ok(());
     }
 
     let logs = &data.config.logs;
 
     if *channel_id == logs.member || *channel_id == logs.system {
-        return Ok(())
+        return Ok(());
     }
 
     let log = logs.member;
@@ -39,17 +38,16 @@ pub async fn handle(
 
         for attachment in &message.attachments {
             c.add_file(serenity::AttachmentType::Image(
-                url::Url::parse(&attachment.url).unwrap()
+                url::Url::parse(&attachment.url).unwrap(),
             ));
         }
 
         if !message.content.is_empty() {
-            c.embed(|c| {
-                c.description(message.content)
-            });
+            c.embed(|c| c.description(message.content));
         }
         c
-    }).await?;
+    })
+    .await?;
 
     Ok(())
 }

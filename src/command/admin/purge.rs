@@ -1,5 +1,5 @@
-use poise::serenity_prelude as serenity;
 use ::serenity::prelude::Mentionable;
+use poise::serenity_prelude as serenity;
 
 use crate::types;
 use crate::util::macros::log_sys;
@@ -11,29 +11,32 @@ pub async fn purge(
     ctx: types::AppContext<'_>,
     #[max = 100] count: u64,
 ) -> Result<(), types::Error> {
-    let messages = ctx.channel_id()
-        .messages(ctx.http(), |g| {
-            g.limit(count)
-        })
+    let messages = ctx
+        .channel_id()
+        .messages(ctx.http(), |g| g.limit(count))
         .await?;
 
     delete(ctx, messages).await
 }
 
-#[poise::command(context_menu_command = "msg purge", category = "admin", guild_only, hide_in_help)]
+#[poise::command(
+    context_menu_command = "msg purge",
+    category = "admin",
+    guild_only,
+    hide_in_help
+)]
 pub async fn purge_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     let Some(form) = PurgeModal::execute(ctx).await else {
-        return Ok(())
+        return Ok(());
     };
 
     let Some((before, after)) = form.parse() else {
-        let mut messages = ctx.channel_id()
-            .messages(ctx.http(), |g| {
-                g.after(&msg).limit(101)
-            })
+        let mut messages = ctx
+            .channel_id()
+            .messages(ctx.http(), |g| g.after(&msg).limit(101))
             .await?;
 
         if messages.len() <= LIMIT as usize {
@@ -41,28 +44,24 @@ pub async fn purge_message(
             delete(ctx, messages).await?;
         }
 
-        return Ok(())
+        return Ok(());
     };
 
     if before == 0 && after == 0 {
         msg.delete(ctx.http()).await?;
-        return Ok(())
+        return Ok(());
     }
 
     let mut messages_before = if before > 0 {
         ctx.channel_id()
-            .messages(ctx.http(), |g| {
-                g.before(&msg).limit(before)
-            })
+            .messages(ctx.http(), |g| g.before(&msg).limit(before))
             .await?
     } else {
         vec![]
     };
     let mut messages_after = if after > 0 {
         ctx.channel_id()
-            .messages(ctx.http(), |g| {
-                g.after(&msg).limit(after)
-            })
+            .messages(ctx.http(), |g| g.after(&msg).limit(after))
             .await?
     } else {
         vec![]
@@ -88,12 +87,14 @@ impl PurgeModal {
     async fn execute(ctx: types::AppContext<'_>) -> Option<Self> {
         poise::execute_modal(
             ctx,
-            Some(Self{
+            Some(Self {
                 before: Some("0".to_string()),
                 after: Some("0".to_string()),
             }),
-            None
-        ).await.ok()?
+            None,
+        )
+        .await
+        .ok()?
     }
     fn parse(&self) -> Option<(u64, u64)> {
         let b = self.before.as_ref().map(|b| b.parse().unwrap_or(0));
@@ -108,7 +109,7 @@ impl PurgeModal {
                     a = LIMIT
                 }
                 Some((b, a))
-            },
+            }
             _ => None,
         }
     }
@@ -116,7 +117,7 @@ impl PurgeModal {
 
 async fn delete(
     ctx: types::AppContext<'_>,
-    messages: Vec<serenity::Message>
+    messages: Vec<serenity::Message>,
 ) -> Result<(), types::Error> {
     ctx.channel_id()
         .delete_messages(ctx.http(), &messages)
@@ -125,9 +126,11 @@ async fn delete(
     ctx.send(|c| {
         c.content(format!("{} mesaj silindi", messages.len()));
         c.ephemeral(true)
-    }).await?;
+    })
+    .await?;
 
-    log_sys!(ctx,
+    log_sys!(
+        ctx,
         "{} {} kanalında {} mesaj silindi",
         ctx.author(),
         ctx.channel_id().mention(),
@@ -138,29 +141,29 @@ async fn delete(
 
     for message in messages {
         if message.author.bot {
-            continue
+            continue;
         }
 
-        log_member.send_message(ctx.http(), |c| {
-            c.content(format!(
-                "{} kanalında {} tarafından gönderilen bir mesaj silindi",
-                ctx.channel_id().mention(),
-                message.author,
-            ));
-
-            for attachment in &message.attachments {
-                c.add_file(serenity::AttachmentType::Image(
-                    url::Url::parse(&attachment.url).unwrap()
+        log_member
+            .send_message(ctx.http(), |c| {
+                c.content(format!(
+                    "{} kanalında {} tarafından gönderilen bir mesaj silindi",
+                    ctx.channel_id().mention(),
+                    message.author,
                 ));
-            }
 
-            if !message.content.is_empty() {
-                c.embed(|c| {
-                    c.description(message.content)
-                });
-            }
-            c
-        }).await?;
+                for attachment in &message.attachments {
+                    c.add_file(serenity::AttachmentType::Image(
+                        url::Url::parse(&attachment.url).unwrap(),
+                    ));
+                }
+
+                if !message.content.is_empty() {
+                    c.embed(|c| c.description(message.content));
+                }
+                c
+            })
+            .await?;
     }
     Ok(())
 }

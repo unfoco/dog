@@ -14,15 +14,29 @@ pub async fn handle(
     event: &Event<'_>,
 ) -> Result<(), types::Error> {
     match event {
-        Event::MessageDelete{
-            channel_id, deleted_message_id, guild_id,
-        } => message_delete::handle(ctx, framework, data, channel_id, deleted_message_id, guild_id).await?,
+        Event::MessageDelete {
+            channel_id,
+            deleted_message_id,
+            guild_id,
+        } => {
+            message_delete::handle(
+                ctx,
+                framework,
+                data,
+                channel_id,
+                deleted_message_id,
+                guild_id,
+            )
+            .await?
+        }
         Event::MessageUpdate {
-            old_if_available, new, event,
+            old_if_available,
+            new,
+            event,
         } => message_update::handle(ctx, framework, data, old_if_available, new, event).await?,
-        Event::ReactionRemove {
-            removed_reaction
-        } => reaction_remove::handle(ctx, framework, data, removed_reaction).await?,
+        Event::ReactionRemove { removed_reaction } => {
+            reaction_remove::handle(ctx, framework, data, removed_reaction).await?
+        }
         _ => {}
     }
     Ok(())

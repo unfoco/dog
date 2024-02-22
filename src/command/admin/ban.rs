@@ -16,7 +16,12 @@ struct BanModal {
     reason: String,
 }
 
-#[poise::command(context_menu_command = "ban", category = "admin", guild_only, hide_in_help)]
+#[poise::command(
+    context_menu_command = "ban",
+    category = "admin",
+    guild_only,
+    hide_in_help
+)]
 pub async fn ban_user(
     ctx: types::AppContext<'_>,
     user: serenity::User,
@@ -24,7 +29,12 @@ pub async fn ban_user(
     ban(ctx, user).await
 }
 
-#[poise::command(context_menu_command = "user ban", category = "admin", guild_only, hide_in_help)]
+#[poise::command(
+    context_menu_command = "user ban",
+    category = "admin",
+    guild_only,
+    hide_in_help
+)]
 pub async fn ban_message(
     ctx: types::AppContext<'_>,
     msg: serenity::Message,
@@ -32,24 +42,19 @@ pub async fn ban_message(
     ban(ctx, msg.author).await
 }
 
-async fn ban(
-    ctx: types::AppContext<'_>,
-    user: serenity::User,
-) -> Result<(), types::Error> {
+async fn ban(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild().unwrap();
 
     let Ok(bans) = guild.bans(ctx.http()).await else {
-        return Ok(())
+        return Ok(());
     };
 
-    if bans.iter().find_map(|b| {
-        if b.user == user {
-            Some(())
-        } else {
-            None
-        }
-    }).is_some() {
-        return unban(ctx, user, guild).await
+    if bans
+        .iter()
+        .find_map(|b| if b.user == user { Some(()) } else { None })
+        .is_some()
+    {
+        return unban(ctx, user, guild).await;
     }
 
     let Some(form) = ({
@@ -58,29 +63,29 @@ async fn ban(
             Some(BanModal {
                 reason: format!("@{} yasaklanma sebebi", user.name),
             }),
-            None
-        ).await?
+            None,
+        )
+        .await?
     }) else {
-        return Ok(())
+        return Ok(());
     };
-    if let Err(_) = guild.ban_with_reason(
-        ctx.http(),
-        user.id,
-        0,
-        &form.reason,
-    ).await {
+    if let Err(_) = guild
+        .ban_with_reason(ctx.http(), user.id, 0, &form.reason)
+        .await
+    {
         ctx.send(|c| {
             c.content("üye yasaklanamadı");
             c.ephemeral(true)
-        }).await?;
-        return Ok(())
+        })
+        .await?;
+        return Ok(());
     }
 
     ctx.send_message(format!("{} yasaklandı", user)).await?;
 
     log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
 
-    return Ok(())
+    return Ok(());
 }
 
 async fn unban(
@@ -88,14 +93,15 @@ async fn unban(
     user: serenity::User,
     guild: serenity::Guild,
 ) -> Result<(), types::Error> {
-    let result = util::interactions::send_confirm(
-        ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?"
-    ).await?;
+    let result =
+        util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
+            .await?;
 
     if result {
         guild.unban(ctx.http(), &user).await?;
 
-        ctx.send_message(format!("{} banı kaldırıldı", user)).await?;
+        ctx.send_message(format!("{} banı kaldırıldı", user))
+            .await?;
 
         log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
     }

@@ -14,16 +14,18 @@ pub async fn run_handle(ctx: types::Context<'_>) -> Result<bool, types::Error> {
     Ok(match ctx.command().category {
         Some(category) => match category {
             "admin" => {
-                let is = config.admins.contains(&ctx.author().id); if !is {
+                let is = config.admins.contains(&ctx.author().id);
+                if !is {
                     ctx.send(|c| {
                         c.content("bu komutu kullanmanız için yönetici olmanız lazım");
                         c.ephemeral(true)
-                    }).await?;
+                    })
+                    .await?;
                 }
                 is
-            },
+            }
             &_ => true,
-        }
+        },
         None => true,
     })
 }

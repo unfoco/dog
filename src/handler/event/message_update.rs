@@ -1,5 +1,5 @@
-use poise::serenity_prelude as serenity;
 use ::serenity::prelude::Mentionable;
+use poise::serenity_prelude as serenity;
 
 use crate::types;
 
@@ -12,18 +12,18 @@ pub async fn handle(
     _event: &serenity::MessageUpdateEvent,
 ) -> Result<(), types::Error> {
     let Some(old_message) = old else {
-        return Ok(())
+        return Ok(());
     };
 
     let Some(new_message) = new else {
-        return Ok(())
+        return Ok(());
     };
 
     if old_message.guild_id.is_none()
         || old_message.author.bot
         || old_message.content == new_message.content
     {
-        return Ok(())
+        return Ok(());
     }
 
     data.log_mem_with_embed(
@@ -37,7 +37,8 @@ pub async fn handle(
             c.field("eski", old_message.content.clone(), true);
             c.field("yeni", new_message.content.clone(), true)
         },
-    ).await?;
+    )
+    .await?;
 
     Ok(())
 }

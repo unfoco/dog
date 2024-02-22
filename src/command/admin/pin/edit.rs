@@ -1,5 +1,5 @@
-use poise::serenity_prelude as serenity;
 use ::serenity::json;
+use poise::serenity_prelude as serenity;
 
 use crate::types;
 use crate::util::traits::ExtendContext;
@@ -18,35 +18,29 @@ pub async fn handle(
     ctx: types::AppContext<'_>,
     mut msg: serenity::Message,
 ) -> Result<(), types::Error> {
-
     let Some(webhook_id) = msg.webhook_id else {
         ctx.send(|c| {
             c.content("not a webhook message");
             c.ephemeral(true)
-        }).await?;
-        return Ok(())
+        })
+        .await?;
+        return Ok(());
     };
 
     let Some(embed) = msg.embeds.iter_mut().find_map(|e| {
-        e.fields.iter().find_map(|f| {
-            if f.name == "kaynak" {
-                Some(())
-            } else {
-                None
-            }
-        }).map(|_| e)
+        e.fields
+            .iter()
+            .find_map(|f| if f.name == "kaynak" { Some(()) } else { None })
+            .map(|_| e)
     }) else {
         return Ok(());
     };
 
-    let note_field: Option<(usize, &mut serenity::EmbedField)> = embed.fields.iter_mut()
-        .enumerate().find_map(|(i, f)| {
-        if f.name == "not" {
-            Some((i, f))
-        } else {
-            None
-        }
-    });
+    let note_field: Option<(usize, &mut serenity::EmbedField)> = embed
+        .fields
+        .iter_mut()
+        .enumerate()
+        .find_map(|(i, f)| if f.name == "not" { Some((i, f)) } else { None });
 
     let note_value = if let Some(field) = &note_field {
         Some(field.1.value.clone())
@@ -58,16 +52,17 @@ pub async fn handle(
         poise::execute_modal(
             ctx,
             Option::from(EditPinModal {
-                note: note_value.clone()
+                note: note_value.clone(),
             }),
-            None
-        ).await?
+            None,
+        )
+        .await?
     }) else {
-        return Ok(())
+        return Ok(());
     };
 
     if note_value == form.note {
-        return Ok(())
+        return Ok(());
     }
 
     let webhook = webhook_id.to_webhook(ctx.http()).await?;
@@ -80,31 +75,30 @@ pub async fn handle(
         }
     } else {
         if let Some(new) = &form.note {
-            embed.fields.push(serenity::EmbedField::new(
-                "not", new, true
-            ));
+            embed
+                .fields
+                .push(serenity::EmbedField::new("not", new, true));
         }
     }
 
-    let embeds: Vec<json::Value> = msg.embeds.iter()
+    let embeds: Vec<json::Value> = msg
+        .embeds
+        .iter()
         .map(|e| super::embed_to_json(e.clone()))
         .collect();
 
-    webhook.edit_message(ctx.http(), msg.id, |e| {
-        e.embeds(embeds)
-    }).await?;
+    webhook
+        .edit_message(ctx.http(), msg.id, |e| e.embeds(embeds))
+        .await?;
 
     ctx.log_sys_with_embed(
-        format!(
-            "{} {} pinini düzenledi",
-            ctx.author(),
-            msg.link()
-        ),
+        format!("{} {} pinini düzenledi", ctx.author(), msg.link()),
         |c| {
             c.field("eski", note_value.unwrap_or_default(), true);
             c.field("yeni", form.note.unwrap_or_default(), true)
-        }
-    ).await?;
+        },
+    )
+    .await?;
 
     Ok(())
 }
