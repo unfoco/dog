@@ -22,20 +22,24 @@ pub async fn say(
     let Some(form) = ({
         poise::execute_modal(
             ctx,
-            Some(SayModal{
-                message: "".to_string()
+            Some(SayModal {
+                message: "".to_string(),
             }),
-            None
-        ).await?
+            None,
+        )
+        .await?
     }) else {
-        return Ok(())
+        return Ok(());
     };
 
     let target = channel.unwrap_or(ctx.channel_id());
 
-    let message = target.send_message_content(ctx.http(), form.message).await?;
+    let message = target
+        .send_message_content(ctx.http(), form.message)
+        .await?;
 
-    log_sys!(ctx,
+    log_sys!(
+        ctx,
         "{} bot aracılığı ile {} mesajını gönderdi",
         ctx.author(),
         message.link()

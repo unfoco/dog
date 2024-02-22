@@ -24,5 +24,5 @@ pub fn commands() -> types::CommandVec {
         warn::unwarn_user(),
         warn::unwarn_message(),
         pin::pin(),
-    ]
+    ];
 }

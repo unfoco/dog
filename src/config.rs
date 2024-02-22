@@ -1,7 +1,10 @@
-use figment::{Figment, providers::{Format, Json, Env}};
+use figment::{
+    providers::{Env, Format, Json},
+    Figment,
+};
 use poise::serenity_prelude as serenity;
-use std::collections::HashMap;
 use serde::Deserialize;
+use std::collections::HashMap;
 
 #[derive(Clone, Deserialize)]
 pub struct WebhookChannel {
@@ -11,7 +14,8 @@ pub struct WebhookChannel {
 
 impl WebhookChannel {
     pub async fn webhook<H>(&self, http: H) -> serenity::Result<serenity::Webhook>
-        where H: AsRef<serenity::Http>
+    where
+        H: AsRef<serenity::Http>,
     {
         serenity::Webhook::from_url(http, &self.webhook).await
     }
