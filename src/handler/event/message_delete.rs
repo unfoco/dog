@@ -30,11 +30,17 @@ pub async fn handle(
     let log = logs.member;
 
     log.send_message(ctx, |c| {
-        c.content(format!(
-            "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
-            channel_id.mention(),
-            message.author,
-        ));
+        c.add_embed(|c| {
+            c.description(format!(
+                "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
+                channel_id.mention(),
+                message.author,
+            ))
+        });
+
+        if !message.content.is_empty() {
+            c.add_embed(|c| c.description(message.content));
+        }
 
         for attachment in &message.attachments {
             c.add_file(serenity::AttachmentType::Image(
@@ -42,9 +48,6 @@ pub async fn handle(
             ));
         }
 
-        if !message.content.is_empty() {
-            c.embed(|c| c.description(message.content));
-        }
         c
     })
     .await?;

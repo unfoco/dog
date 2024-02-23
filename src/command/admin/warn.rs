@@ -101,7 +101,7 @@ async fn warn(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
         if let Some(time) = member.communication_disabled_until {
             log_sys!(
                 ctx,
-                "{} eski mutesinin bitmesine <t:{}:R>",
+                "{} eski susturmasının bitmesine <t:{}:R>",
                 user,
                 time.timestamp()
             );

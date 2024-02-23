@@ -146,11 +146,17 @@ async fn delete(
 
         log_member
             .send_message(ctx.http(), |c| {
-                c.content(format!(
-                    "{} kanalında {} tarafından gönderilen bir mesaj silindi",
-                    ctx.channel_id().mention(),
-                    message.author,
-                ));
+                c.add_embed(|c| {
+                    c.description(format!(
+                        "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
+                        ctx.channel_id().mention(),
+                        message.author,
+                    ))
+                });
+
+                if !message.content.is_empty() {
+                    c.add_embed(|c| c.description(message.content));
+                }
 
                 for attachment in &message.attachments {
                     c.add_file(serenity::AttachmentType::Image(
@@ -158,9 +164,6 @@ async fn delete(
                     ));
                 }
 
-                if !message.content.is_empty() {
-                    c.embed(|c| c.description(message.content));
-                }
                 c
             })
             .await?;
