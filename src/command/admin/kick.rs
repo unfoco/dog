@@ -41,14 +41,16 @@ pub async fn kick_message(
 }
 
 async fn kick(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
-    if user.member.is_none() {
+    let guild = ctx.guild_id().unwrap();
+
+    if guild.member(ctx.http(), &user.id).await.is_err() {
         ctx.send(|c| {
             c.content("üye bulunamadığından atılamadı");
             c.ephemeral(true)
         })
         .await?;
         return Ok(());
-    }
+    };
 
     let Some(form) = ({
         poise::execute_modal(
@@ -62,8 +64,6 @@ async fn kick(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
     }) else {
         return Ok(());
     };
-
-    let guild = ctx.guild_id().unwrap();
 
     guild
         .kick_with_reason(ctx.http(), user.id, &form.reason)
