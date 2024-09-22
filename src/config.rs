@@ -34,6 +34,8 @@ pub struct Config {
     pub boards: HashMap<String, WebhookChannel>,
     pub logs: LogChannels,
     pub admins: Vec<serenity::UserId>,
+    pub autorole: serenity::RoleId,
+    pub guild_id: serenity::GuildId,
 }
 
 impl Config {

@@ -17,7 +17,7 @@ async fn main() -> Result<(), types::Error> {
         .token(config.token.clone())
         .options(options())
         .intents(
-            serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT,
+            serenity::GatewayIntents::all()
         )
         .setup(move |ctx, ready, framework| {
             Box::pin(handler::handle_setup(ctx, framework, ready, config))
