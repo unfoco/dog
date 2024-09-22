@@ -23,7 +23,7 @@ pub async fn handle_setup(
         }
     }
 
-    let guild = serenity::GuildId(1153049076644991047);
+    let guild = config.guild_id;
 
     for _ in 1..=5 {
         let Some(command) = menu.pop() else { continue };

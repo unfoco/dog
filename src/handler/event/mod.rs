@@ -6,6 +6,7 @@ use crate::types;
 mod message_delete;
 mod message_update;
 mod reaction_remove;
+mod guild_member_add;
 
 pub async fn handle(
     ctx: &serenity::Context,
@@ -36,6 +37,9 @@ pub async fn handle(
         } => message_update::handle(ctx, framework, data, old_if_available, new, event).await?,
         Event::ReactionRemove { removed_reaction } => {
             reaction_remove::handle(ctx, framework, data, removed_reaction).await?
+        }
+        Event::GuildMemberAddition { new_member } => {
+            guild_member_add::handle(ctx, framework, data, new_member).await?
         }
         _ => {}
     }
