@@ -7,6 +7,7 @@ mod message_delete;
 mod message_update;
 mod reaction_remove;
 mod guild_member_add;
+mod message;
 
 pub async fn handle(
     ctx: &serenity::Context,
@@ -40,6 +41,9 @@ pub async fn handle(
         }
         Event::GuildMemberAddition { new_member } => {
             guild_member_add::handle(ctx, framework, data, new_member).await?
+        }
+        Event::Message { new_message } => {
+            message::handle(ctx, framework, data, new_message).await?
         }
         _ => {}
     }
