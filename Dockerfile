@@ -12,7 +12,7 @@ COPY . .
 
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
-FROM scratch
+FROM ubuntu:24.10
 
 WORKDIR /app
 
