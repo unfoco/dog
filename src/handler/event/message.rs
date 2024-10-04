@@ -38,26 +38,29 @@ pub async fn handle(
         let base = start_line.parse::<i32>().unwrap();
         let end = end_line.parse::<i32>().unwrap();
         if end == base {
-            let start = base - 5;
+            let mut start = base - 5;
             let end = base + 5;
+            if start < 0 {
+                start = 0;
+            }
             let mut lines = res_text.lines().enumerate().filter(|(i, _)| {
                 *i >= start as usize && *i <= end as usize
             });
 
             let mut result = String::new();
             while let Some((i, line)) = lines.next() {
-                result.push_str(&format!("{}: {}\n", i, line));
+                result.push_str(&format!("{}: {}\n", i+1, line));
             }
 
             message.reply(&ctx.http, format!("```{}\n{}\n```", extension, result)).await?;
         } else {
             let mut lines = res_text.lines().enumerate().filter(|(i, _)| {
-                *i >= base as usize && *i <= end as usize
+                *i + 1 >= base as usize && *i + 1 <= end as usize
             });
 
             let mut result = String::new();
             while let Some((i, line)) = lines.next() {
-                result.push_str(&format!("{}: {}\n", i, line));
+                result.push_str(&format!("{}: {}\n", i+1, line));
             }
 
             message.reply(&ctx.http, format!("```{}\n{}\n```", extension, result)).await?;
