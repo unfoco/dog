@@ -1,4 +1,4 @@
-FROM rust:1.71.1-alpine as build
+FROM rust:1.81.0-alpine as build
 
 RUN apk update
 RUN apk add pkgconfig openssl openssl-dev musl-dev
@@ -12,7 +12,7 @@ COPY . .
 
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
-FROM scratch
+FROM alpine:3.20.3
 
 WORKDIR /app
 
