@@ -1,4 +1,4 @@
-FROM rust:1.81.0-alpine as build
+FROM rust:1.81.0 as build
 
 RUN apk update
 RUN apk add pkgconfig openssl openssl-dev musl-dev
