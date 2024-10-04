@@ -19,3 +19,10 @@ duration-str = "0.7"
 async-trait = "0.1"
 reqwest = "0.11.27"
 regex = "1.10.6"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
