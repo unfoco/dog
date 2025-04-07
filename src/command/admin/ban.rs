@@ -41,7 +41,7 @@ pub async fn ban_message(
 async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild().unwrap();
 
-    let Ok(bans) = guild.bans(ctx.http(), None, None).await else {
+    let Ok(bans) = guild.bans(ctx, None, None).await else {
         return Ok(());
     };
 
@@ -50,7 +50,7 @@ async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), typ
         .find_map(|b| if b.user == user { Some(()) } else { None })
         .is_some()
     {
-        return unban(ctx, user, guild).await;
+        return unban(ctx, user, guild.to_owned()).await;
     }
 
     let Some(form) = ({
@@ -66,20 +66,20 @@ async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), typ
         return Ok(());
     };
     if let Err(_) = guild
-        .ban_with_reason(ctx.http(), user.id, 0, &form.reason)
+        .ban_with_reason(ctx, user.id, 0, &form.reason)
         .await
     {
-        ctx.send(|c| {
-            c.content("üye yasaklanamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye yasaklanamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     }
 
-    ctx.send_message(format!("{} yasaklandı", user)).await?;
+    //ctx.send_message(format!("{} yasaklandı", user)).await?;
 
-    log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
+    //log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
 
     return Ok(());
 }
@@ -89,17 +89,16 @@ async fn unban(
     user: serenity::User,
     guild: serenity::Guild,
 ) -> Result<(), types::Error> {
-    let result =
-        util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
-            .await?;
+    let result = true; //util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
+        // .await?;
 
     if result {
-        guild.unban(ctx.http(), &user).await?;
+        guild.unban(ctx, &user).await?;
 
-        ctx.send_message(format!("{} banı kaldırıldı", user))
-            .await?;
+        //ctx.send_message(format!("{} banı kaldırıldı", user))
+        //    .await?;
 
-        log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
+        //log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())

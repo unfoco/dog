@@ -32,15 +32,16 @@ pub async fn say(
 
     let target = channel.unwrap_or(ctx.channel_id());
 
-    let message = target
-        .send_message_content(ctx.http(), form.message)
-        .await?;
+    let message= target.send_message(
+        ctx, serenity::CreateMessage::new()
+            .content(form.message)
+    ).await?;
 
-    log_sys!(
-        ctx,
-        "{} bot aracılığı ile {} mesajını gönderdi",
-        ctx.author(),
-        message.link()
-    );
+    //log_sys!(
+    //    ctx,
+    //    "{} bot aracılığı ile {} mesajını gönderdi",
+    //    ctx.author(),
+    //    message.link()
+    //);
     Ok(())
 }

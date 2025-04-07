@@ -12,7 +12,7 @@ COPY . .
 
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
-FROM alpine:3.21
+FROM ubuntu:25.04
 
 WORKDIR /app
 

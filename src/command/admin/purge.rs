@@ -3,16 +3,19 @@ use serenity::Mentionable;
 
 use crate::types;
 
-const LIMIT: u64 = 100;
+const LIMIT: u8 = 100;
 
 #[poise::command(slash_command, category = "admin", guild_only)]
 pub async fn purge(
     ctx: types::ContextApp<'_>,
-    #[max = 100] count: u64,
+    #[max = 100] count: u8,
 ) -> Result<(), types::Error> {
     let messages = ctx
         .channel_id()
-        .messages(ctx.http(), |g| g.limit(count))
+        .messages(
+            ctx, serenity::GetMessages::new()
+                .limit(count)
+        )
         .await?;
 
     delete(ctx, messages).await
@@ -35,7 +38,11 @@ pub async fn purge_message(
     let Some((before, after)) = form.parse() else {
         let mut messages = ctx
             .channel_id()
-            .messages(ctx.http(), |g| g.after(&msg).limit(101))
+            .messages(
+                ctx, serenity::GetMessages::new()
+                    .after(&msg)
+                    .limit(101)
+            )
             .await?;
 
         if messages.len() <= LIMIT as usize {
@@ -47,20 +54,28 @@ pub async fn purge_message(
     };
 
     if before == 0 && after == 0 {
-        msg.delete(ctx.http()).await?;
+        msg.delete(ctx).await?;
         return Ok(());
     }
 
     let mut messages_before = if before > 0 {
         ctx.channel_id()
-            .messages(ctx.http(), |g| g.before(&msg).limit(before))
+            .messages(
+                ctx, serenity::GetMessages::new()
+                    .after(&msg)
+                    .limit(before)
+            )
             .await?
     } else {
         vec![]
     };
     let mut messages_after = if after > 0 {
         ctx.channel_id()
-            .messages(ctx.http(), |g| g.after(&msg).limit(after))
+            .messages(
+                ctx, serenity::GetMessages::new()
+                    .after(&msg)
+                    .limit(after)
+            )
             .await?
     } else {
         vec![]
@@ -95,7 +110,7 @@ impl PurgeModal {
         .await
         .ok()?
     }
-    fn parse(&self) -> Option<(u64, u64)> {
+    fn parse(&self) -> Option<(u8, u8)> {
         let b = self.before.as_ref().map(|b| b.parse().unwrap_or(0));
         let a = self.after.as_ref().map(|a| a.parse().unwrap_or(0));
 
@@ -119,22 +134,22 @@ async fn delete(
     messages: Vec<serenity::Message>,
 ) -> Result<(), types::Error> {
     ctx.channel_id()
-        .delete_messages(ctx.http(), &messages)
+        .delete_messages(ctx, &messages)
         .await?;
 
-    ctx.send(|c| {
-        c.content(format!("{} mesaj silindi", messages.len()));
-        c.ephemeral(true)
-    })
-    .await?;
+    ctx.send(
+        poise::CreateReply::default()
+            .content(format!("{} mesaj silindi", messages.len()))
+            .ephemeral(true)
+    ).await?;
 
-    log_sys!(
-        ctx,
-        "{} {} kanalında {} mesaj silindi",
-        ctx.author(),
-        ctx.channel_id().mention(),
-        messages.len()
-    );
+    //log_sys!(
+    //    ctx,
+    //    "{} {} kanalında {} mesaj silindi",
+    //    ctx.author(),
+    //    ctx.channel_id().mention(),
+    //    messages.len()
+    //);
 
     let log_member = ctx.data.config.logs.member;
 
@@ -143,29 +158,29 @@ async fn delete(
             continue;
         }
 
-        log_member
-            .send_message(ctx.http(), |c| {
-                c.add_embed(|c| {
-                    c.description(format!(
-                        "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
-                        ctx.channel_id().mention(),
-                        message.author,
-                    ))
-                });
+        //log_member
+        //    .send_message(ctx, |c| {
+        //        c.add_embed(|c| {
+        //            c.description(format!(
+        //                "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
+        //                ctx.channel_id().mention(),
+        //                message.author,
+        //            ))
+        //        });
 
-                if !message.content.is_empty() {
-                    c.add_embed(|c| c.description(message.content));
-                }
+        //        if !message.content.is_empty() {
+        //            c.add_embed(|c| c.description(message.content));
+        //        }
 
-                for attachment in &message.attachments {
-                    c.add_file(serenity::AttachmentType::Image(
-                        url::Url::parse(&attachment.url).unwrap(),
-                    ));
-                }
+        //        for attachment in &message.attachments {
+        //            c.add_file(serenity::AttachmentType::Image(
+        //                url::Url::parse(&attachment.url).unwrap(),
+        //            ));
+        //        }
 
-                c
-            })
-            .await?;
+        //        c
+        //    })
+        //    .await?;
     }
     Ok(())
 }

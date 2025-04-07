@@ -69,9 +69,12 @@ pub async fn handle(
             ctx, format!("```{}\n{}\n```", extension, result)
         ).await?;
     } else {
-        let mut lines = res_text.lines().enumerate().filter(|(i, _)| {
-            *i + 1 >= base as usize && *i + 1 <= end as usize
-        });
+        let mut lines = res_text
+            .lines()
+            .enumerate()
+            .filter(|(i, _)| {
+                *i + 1 >= base as usize && *i + 1 <= end as usize
+            });
 
         let mut result = String::new();
         while let Some((i, line)) = lines.next() {

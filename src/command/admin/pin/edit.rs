@@ -18,11 +18,11 @@ pub async fn handle(
     mut msg: serenity::Message,
 ) -> Result<(), types::Error> {
     let Some(webhook_id) = msg.webhook_id else {
-        ctx.send(|c| {
-            c.content("not a webhook message");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("not a webhook message")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
@@ -64,7 +64,7 @@ pub async fn handle(
         return Ok(());
     }
 
-    let webhook = webhook_id.to_webhook(ctx.http()).await?;
+    let webhook = webhook_id.to_webhook(ctx).await?;
 
     if let Some((index, field)) = note_field {
         if let Some(new) = &form.note {
@@ -87,17 +87,17 @@ pub async fn handle(
         .collect();
 
     webhook
-        .edit_message(ctx.http(), msg.id, |e| e.embeds(embeds))
+        .edit_message(ctx, msg.id, |e| e.embeds(embeds))
         .await?;
 
-    ctx.log_sys_with_embed(
-        format!("{} {} pinini düzenledi", ctx.author(), msg.link()),
-        |c| {
-            c.field("eski", note_value.unwrap_or_default(), true);
-            c.field("yeni", form.note.unwrap_or_default(), true)
-        },
-    )
-    .await?;
+    //ctx.log_sys_with_embed(
+    //    format!("{} {} pinini düzenledi", ctx.author(), msg.link()),
+    //    |c| {
+    //        c.field("eski", note_value.unwrap_or_default(), true);
+    //        c.field("yeni", form.note.unwrap_or_default(), true)
+    //    },
+    //)
+    //.await?;
 
     Ok(())
 }

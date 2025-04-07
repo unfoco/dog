@@ -10,7 +10,7 @@ pub async fn handle(
 ) -> Result<(), types::Error> {
     let role = data.config.roles.default;
 
-    if let Err(err) = new_member.add_role(&ctx.http, role).await {
+    if let Err(err) = new_member.add_role(ctx, role).await {
         eprintln!("error adding role: {:?}", err);
     } else {
         println!("successfully added role to: {:?}", new_member.user.name);

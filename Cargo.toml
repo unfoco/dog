@@ -3,11 +3,17 @@ name = "dog"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies.chrono]
+version = "0.4"
+
 [dependencies.config]
 version = "0.15"
 features = [
     "json"
 ]
+
+[dependencies.duration-str]
+version = "0.17"
 
 [dependencies.poise]
 version = "0.6"

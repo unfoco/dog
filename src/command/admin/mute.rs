@@ -44,12 +44,12 @@ pub async fn mute_message(
 async fn mute(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
-    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
-        ctx.send(|c| {
-            c.content("üye bulunamadığından susturulamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+    let Ok(mut member) = guild.member(ctx, &user.id).await else {
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye bulunamadığından susturulamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
@@ -73,31 +73,31 @@ async fn mute(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), ty
 
     if let Err(_) = member
         .disable_communication_until_datetime(
-            ctx.http(),
+            ctx,
             serenity::Timestamp::from(
                 chrono::Utc::now() + duration_str::parse(&form.duration).unwrap(),
             ),
         )
         .await
     {
-        ctx.send(|c| {
-            c.content("üye susturulmadı");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye susturulmadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     }
 
-    ctx.send_message(format!("{} {} süreliğine susturuldu", user, &form.duration))
-        .await?;
+    //ctx.send_message(format!("{} {} süreliğine susturuldu", user, &form.duration))
+    //    .await?;
 
-    log_sys!(
-        ctx,
-        "{} {} süreliğine {} tarafından susturuldu",
-        user,
-        &form.duration,
-        ctx.author()
-    );
+    //log_sys!(
+    //    ctx,
+    //    "{} {} süreliğine {} tarafından susturuldu",
+    //    user,
+    //    &form.duration,
+    //    ctx.author()
+    //);
 
     return Ok(());
 }
@@ -108,24 +108,24 @@ async fn unmute(
     _guild: serenity::GuildId,
     mut member: serenity::Member,
 ) -> Result<(), types::Error> {
-    let result = util::interactions::send_confirm(
-        ctx,
-        "bu üye zaten susturulmuş susturmayı kaldırmak istiyor musunuz?",
-    )
-    .await?;
+    let result = true; //util::interactions::send_confirm(
+    //    ctx,
+    //    "bu üye zaten susturulmuş susturmayı kaldırmak istiyor musunuz?",
+    //)
+    //.await?;
 
     if result {
-        member.enable_communication(ctx.http()).await?;
+        member.enable_communication(ctx).await?;
 
-        ctx.send_message(format!("{} susturması kaldırıldı", user))
-            .await?;
+        //ctx.send_message(format!("{} susturması kaldırıldı", user))
+        //    .await?;
 
-        log_sys!(
-            ctx,
-            "{} susturması {} tarafından kaldırıldı",
-            user,
-            ctx.author()
-        );
+        //log_sys!(
+        //    ctx,
+        //    "{} susturması {} tarafından kaldırıldı",
+        //    user,
+        //    ctx.author()
+        //);
     }
 
     Ok(())

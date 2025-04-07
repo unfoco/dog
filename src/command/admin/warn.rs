@@ -41,12 +41,12 @@ pub async fn warn_message(
 async fn warn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
-    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
-        ctx.send(|c| {
-            c.content("üye bulunamadığından uyarılamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+    let Ok(mut member) = guild.member(ctx, &user.id).await else {
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye bulunamadığından uyarılamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
@@ -72,51 +72,51 @@ async fn warn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), ty
             None
         }
     }) else {
-        ctx.send(|c| {
-            c.content("üye zaten yeterince uyarı aldı");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye zaten yeterince uyarı aldı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
-    member.add_role(ctx.http(), role).await?;
+    member.add_role(ctx, role).await?;
 
-    ctx.send_message(format!("{} uyarıldı", user)).await?;
+    //ctx.send_message(format!("{} uyarıldı", user)).await?;
 
-    ctx.log_sys_with_embed(
-        format!("{} {} tarafından uyarıldı", user, ctx.author()),
-        |c| c.field("sebep", form.reason, true),
-    )
-    .await?;
+    //ctx.log_sys_with_embed(
+    //    format!("{} {} tarafından uyarıldı", user, ctx.author()),
+    //    |c| c.field("sebep", form.reason, true),
+    //)
+    //.await?;
 
     if warns.iter().all(|r| member.roles.contains(r)) {
-        ctx.send_message(
-            "üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur",
-        )
-        .await?;
+        //ctx.send_message(
+        //    "üye uyarı hakkını doldurduğundan yönetim cezaya karar veresiye kadar susturulmuştur",
+        //)
+        //.await?;
 
         if let Some(time) = member.communication_disabled_until {
-            log_sys!(
-                ctx,
-                "{} eski susturmasının bitmesine <t:{}:R>",
-                user,
-                time.timestamp()
-            );
+            //log_sys!(
+            //    ctx,
+            //    "{} eski susturmasının bitmesine <t:{}:R>",
+            //    user,
+            //    time.timestamp()
+            //);
         }
 
         member
             .disable_communication_until_datetime(
-                ctx.http(),
+                ctx,
                 serenity::Timestamp::from(chrono::Utc::now() + duration_str::parse("24d").unwrap()),
             )
             .await?;
 
-        ctx.send_message(format!(
-            "{} cezasına karar verilesiye kadar susturuldu",
-            user
-        ))
-        .await?;
+        //ctx.send_message(format!(
+        //    "{} cezasına karar verilesiye kadar susturuldu",
+        //    user
+        //))
+        //.await?;
     }
 
     Ok(())
@@ -151,16 +151,16 @@ pub async fn unwarn_message(
 pub async fn unwarn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
-    let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
-        ctx.send(|c| {
-            c.content("üye bulunamadığından uyarı kaldırılamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+    let Ok(mut member) = guild.member(ctx, &user.id).await else {
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye bulunamadığından uyarı kaldırılamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
-    let warns = ctx.data.config.warns.clone();
+    let warns = ctx.data.config.roles.warnings.clone();
 
     let Some(role) = warns.iter().rev().find_map(|role| {
         if member.roles.contains(role) {
@@ -169,25 +169,25 @@ pub async fn unwarn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<
             None
         }
     }) else {
-        ctx.send(|c| {
-            c.content("üye hiç uyarı almamış");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye hiç uyarı almamış")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
-    member.remove_role(ctx.http(), role).await?;
+    member.remove_role(ctx, role).await?;
 
-    ctx.send_message(format!("{} bir uyarısı kaldırıldı", member))
-        .await?;
+    //ctx.send_message(format!("{} bir uyarısı kaldırıldı", member))
+    //    .await?;
 
-    log_sys!(
-        ctx,
-        "{} bir uyarısı {} tarafından kaldırıldı",
-        member,
-        ctx.author()
-    );
+    //log_sys!(
+    //    ctx,
+    //    "{} bir uyarısı {} tarafından kaldırıldı",
+    //    member,
+    //    ctx.author()
+    //);
 
     Ok(())
 }
