@@ -1,8 +1,6 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "kick"]
@@ -21,7 +19,7 @@ struct KickModal {
     hide_in_help
 )]
 pub async fn kick_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     kick(ctx, user).await
@@ -34,13 +32,13 @@ pub async fn kick_user(
     hide_in_help
 )]
 pub async fn kick_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     kick(ctx, msg.author).await
 }
 
-async fn kick(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+async fn kick(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
     if guild.member(ctx.http(), &user.id).await.is_err() {

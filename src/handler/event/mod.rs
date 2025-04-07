@@ -1,5 +1,5 @@
 use poise::serenity_prelude as serenity;
-use poise::Event;
+use serenity::FullEvent;
 
 use crate::types;
 
@@ -11,40 +11,49 @@ mod message;
 
 pub async fn handle(
     ctx: &serenity::Context,
-    framework: types::FrameworkContext<'_>,
+    event: &FullEvent,
+    framework: types::ContextFramework<'_>,
     data: &types::Data,
-    event: &Event<'_>,
 ) -> Result<(), types::Error> {
     match event {
-        Event::MessageDelete {
-            channel_id,
-            deleted_message_id,
-            guild_id,
-        } => {
-            message_delete::handle(
-                ctx,
-                framework,
-                data,
-                channel_id,
-                deleted_message_id,
-                guild_id,
-            )
-            .await?
-        }
-        Event::MessageUpdate {
+        //FullEvent::MessageDelete {
+        //    channel_id,
+        //    deleted_message_id,
+        //    guild_id,
+        //} => {
+        //    message_delete::handle(
+        //        ctx, framework, data, channel_id, deleted_message_id, guild_id
+        //    ).await?
+        //}
+
+        FullEvent::MessageUpdate {
             old_if_available,
             new,
             event,
-        } => message_update::handle(ctx, framework, data, old_if_available, new, event).await?,
-        Event::ReactionRemove { removed_reaction } => {
-            reaction_remove::handle(ctx, framework, data, removed_reaction).await?
+        } => {
+            message_update::handle(
+                ctx, framework, data, old_if_available, new, event
+            ).await?
+        },
+
+        FullEvent::ReactionRemove { removed_reaction } => {
+            reaction_remove::handle(
+                ctx, framework, data, removed_reaction
+            ).await?
         }
-        Event::GuildMemberAddition { new_member } => {
-            guild_member_add::handle(ctx, framework, data, new_member).await?
+
+        FullEvent::GuildMemberAddition { new_member } => {
+            guild_member_add::handle(
+                ctx, framework, data, new_member
+            ).await?
         }
-        Event::Message { new_message } => {
-            message::handle(ctx, framework, data, new_message).await?
+
+        FullEvent::Message { new_message } => {
+            message::handle(
+                ctx, framework, data, new_message
+            ).await?
         }
+
         _ => {}
     }
     Ok(())

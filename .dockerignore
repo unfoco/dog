@@ -2,5 +2,11 @@
 /.git
 
 Cargo.lock
-Config.json
+Config.*
 Readme.md
+
+.devenv*
+devenv*
+
+.direnv
+.envrc

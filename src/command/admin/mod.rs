@@ -8,7 +8,7 @@ mod purge;
 mod say;
 mod warn;
 
-pub fn commands() -> types::CommandVec {
+pub fn commands() -> Vec<types::Command> {
     return vec![
         ban::ban_user(),
         ban::ban_message(),

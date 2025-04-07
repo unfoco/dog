@@ -1,8 +1,6 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "warn"]
@@ -21,7 +19,7 @@ struct WarnModal {
     hide_in_help
 )]
 pub async fn warn_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     warn(ctx, user).await
@@ -34,13 +32,13 @@ pub async fn warn_user(
     hide_in_help
 )]
 pub async fn warn_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     warn(ctx, msg.author).await
 }
 
-async fn warn(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+async fn warn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
@@ -65,7 +63,7 @@ async fn warn(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
         return Ok(());
     };
 
-    let warns = &ctx.data.config.warns;
+    let warns = &ctx.data.config.roles.warnings;
 
     let Some(role) = warns.iter().find_map(|role| {
         if !member.roles.contains(role) {
@@ -131,7 +129,7 @@ async fn warn(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
     hide_in_help
 )]
 pub async fn unwarn_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     unwarn(ctx, user).await
@@ -144,13 +142,13 @@ pub async fn unwarn_user(
     hide_in_help
 )]
 pub async fn unwarn_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     unwarn(ctx, msg.author).await
 }
 
-pub async fn unwarn(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+pub async fn unwarn(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {

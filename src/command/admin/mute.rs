@@ -3,10 +3,6 @@ use poise::serenity_prelude as serenity;
 
 use crate::types;
 
-use crate::util;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
-
 #[derive(Debug, poise::Modal)]
 #[name = "mute"]
 #[allow(dead_code)]
@@ -26,7 +22,7 @@ struct MuteModal {
     hide_in_help
 )]
 pub async fn mute_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     mute(ctx, user).await
@@ -39,13 +35,13 @@ pub async fn mute_user(
     hide_in_help
 )]
 pub async fn mute_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     mute(ctx, msg.author).await
 }
 
-async fn mute(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+async fn mute(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
     let Ok(mut member) = guild.member(ctx.http(), &user.id).await else {
@@ -107,7 +103,7 @@ async fn mute(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
 }
 
 async fn unmute(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
     _guild: serenity::GuildId,
     mut member: serenity::Member,

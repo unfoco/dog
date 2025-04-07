@@ -1,8 +1,7 @@
-use ::serenity::json;
 use poise::serenity_prelude as serenity;
+use serenity::json;
 
 use crate::types;
-use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "pini düzenle"]
@@ -15,7 +14,7 @@ struct EditPinModal {
 }
 
 pub async fn handle(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     mut msg: serenity::Message,
 ) -> Result<(), types::Error> {
     let Some(webhook_id) = msg.webhook_id else {

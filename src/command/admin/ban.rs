@@ -2,10 +2,6 @@ use poise::serenity_prelude as serenity;
 
 use crate::types;
 
-use crate::util;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
-
 #[derive(Debug, poise::Modal)]
 #[name = "ban"]
 #[allow(dead_code)]
@@ -23,7 +19,7 @@ struct BanModal {
     hide_in_help
 )]
 pub async fn ban_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     ban(ctx, user).await
@@ -36,16 +32,16 @@ pub async fn ban_user(
     hide_in_help
 )]
 pub async fn ban_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     ban(ctx, msg.author).await
 }
 
-async fn ban(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild().unwrap();
 
-    let Ok(bans) = guild.bans(ctx.http()).await else {
+    let Ok(bans) = guild.bans(ctx.http(), None, None).await else {
         return Ok(());
     };
 
@@ -89,7 +85,7 @@ async fn ban(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), typ
 }
 
 async fn unban(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
     guild: serenity::Guild,
 ) -> Result<(), types::Error> {

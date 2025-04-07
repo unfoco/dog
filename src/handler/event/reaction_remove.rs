@@ -4,7 +4,7 @@ use crate::types;
 
 pub async fn handle(
     ctx: &serenity::Context,
-    _framework: types::FrameworkContext<'_>,
+    _framework: types::ContextFramework<'_>,
     data: &types::Data,
     reaction: &serenity::Reaction,
 ) -> Result<(), types::Error> {
@@ -12,26 +12,22 @@ pub async fn handle(
         return Ok(());
     };
 
-    if member.guild_id.is_none() {
-        return Ok(());
-    }
+    let embed = serenity::CreateEmbed::new()
+    .description(format!(
+        "{} {} mesajından {} tepkisini kaldırdı",
+        member.user,
+        reaction
+            .message_id
+            .link(reaction.channel_id, reaction.guild_id),
+        reaction.emoji,
+    ));
 
-    let Some(user) = &member.user else {
-        return Ok(());
-    };
+    let logs = &data.config.logs;
 
-    data.log_mem(
-        ctx,
-        format!(
-            "{} {} mesajından {} tepkisini kaldırdı",
-            user,
-            reaction
-                .message_id
-                .link(reaction.channel_id, reaction.guild_id),
-            reaction.emoji,
-        ),
-    )
-    .await?;
+    logs.member.send_message(
+        ctx, serenity::CreateMessage::new()
+            .add_embed(embed)
+    ).await?;
 
     Ok(())
 }

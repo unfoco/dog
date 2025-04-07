@@ -1,8 +1,6 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
-use crate::util::macros::log_sys;
-use crate::util::traits::{ExtendChannelId, ExtendContext};
 
 #[derive(Debug, poise::Modal)]
 #[name = "say"]
@@ -16,7 +14,7 @@ struct SayModal {
 
 #[poise::command(slash_command, category = "admin", guild_only)]
 pub async fn say(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     channel: Option<serenity::ChannelId>,
 ) -> Result<(), types::Error> {
     let Some(form) = ({

@@ -1,11 +1,11 @@
-use ::serenity::prelude::Mentionable;
 use poise::serenity_prelude as serenity;
+use serenity::Mentionable;
 
 use crate::types;
 
 pub async fn handle(
     ctx: &serenity::Context,
-    _framework: types::FrameworkContext<'_>,
+    _framework: types::ContextFramework<'_>,
     data: &types::Data,
     old: &Option<serenity::Message>,
     new: &Option<serenity::Message>,
@@ -26,19 +26,21 @@ pub async fn handle(
         return Ok(());
     }
 
-    data.log_mem_with_embed(
-        ctx,
-        format!(
+    let embed = serenity::CreateEmbed::new()
+        .description(format!(
             "{} {} kanalında gönderdiği bir mesajı düzenledi",
             old_message.author,
             old_message.channel_id.mention(),
-        ),
-        |c| {
-            c.field("eski", old_message.content.clone(), true);
-            c.field("yeni", new_message.content.clone(), true)
-        },
-    )
-    .await?;
+        ))
+        .field("eski", old_message.content.clone(), true)
+        .field("yeni", new_message.content.clone(), true);
+
+    let logs = &data.config.logs;
+
+    logs.member.send_message(
+        ctx, serenity::CreateMessage::new()
+            .add_embed(embed)
+    ).await?;
 
     Ok(())
 }

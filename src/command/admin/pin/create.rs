@@ -1,12 +1,9 @@
-use ::serenity::json;
-use ::serenity::prelude::Mentionable;
 use poise::serenity_prelude as serenity;
-
-use crate::util::macros::log_sys;
-use crate::{types, util};
+use serenity::Mentionable;
+use serenity::json;
 
 pub async fn handle(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     let Some(result) = util::interactions::send_dropdown(
