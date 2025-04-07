@@ -1,12 +1,9 @@
-use ::serenity::json;
-use ::serenity::prelude::Mentionable;
 use poise::serenity_prelude as serenity;
-
-use crate::util::macros::log_sys;
-use crate::{types, util};
+use serenity::Mentionable;
+use serenity::json;
 
 pub async fn handle(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     let Some(result) = util::interactions::send_dropdown(
@@ -21,12 +18,12 @@ pub async fn handle(
 
     let board = ctx.data().config.boards.get(&result).cloned().unwrap();
 
-    let webhook = board.webhook(ctx.http()).await?;
+    let webhook = board.webhook(ctx).await?;
 
     let member = ctx
         .guild()
         .unwrap()
-        .member(ctx.http(), msg.author.id)
+        .member(ctx, msg.author.id)
         .await?;
 
     let name = member.display_name().clone();
@@ -35,7 +32,7 @@ pub async fn handle(
         .unwrap_or_else(|| msg.author.avatar_url().unwrap());
 
     webhook
-        .execute(ctx.http(), true, |w| {
+        .execute(ctx, true, |w| {
             w.username(&name)
                 .avatar_url(&avatar)
                 .content(msg.content.clone());
@@ -61,17 +58,17 @@ pub async fn handle(
         .await?;
 
     msg.reply(
-        ctx.http(),
+        ctx,
         format!("mesaj {} panosuna pinlendi", board.channel.mention(),),
     )
     .await?;
 
-    log_sys!(
-        ctx,
-        "{} {} mesajını {} panosuna pinledi",
-        ctx.author(),
-        msg.link(),
-        board.channel.mention()
-    );
+    //log_sys!(
+    //    ctx,
+    //    "{} {} mesajını {} panosuna pinledi",
+    //    ctx.author(),
+    //    msg.link(),
+    //    board.channel.mention()
+    //);
     Ok(())
 }

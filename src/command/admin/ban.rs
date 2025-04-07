@@ -2,10 +2,6 @@ use poise::serenity_prelude as serenity;
 
 use crate::types;
 
-use crate::util;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
-
 #[derive(Debug, poise::Modal)]
 #[name = "ban"]
 #[allow(dead_code)]
@@ -23,7 +19,7 @@ struct BanModal {
     hide_in_help
 )]
 pub async fn ban_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     ban(ctx, user).await
@@ -36,16 +32,16 @@ pub async fn ban_user(
     hide_in_help
 )]
 pub async fn ban_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     ban(ctx, msg.author).await
 }
 
-async fn ban(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
-    let guild = ctx.guild().unwrap();
+async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
+    let guild = ctx.guild_id().unwrap();
 
-    let Ok(bans) = guild.bans(ctx.http()).await else {
+    let Ok(bans) = guild.bans(ctx, None, None).await else {
         return Ok(());
     };
 
@@ -70,40 +66,39 @@ async fn ban(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), typ
         return Ok(());
     };
     if let Err(_) = guild
-        .ban_with_reason(ctx.http(), user.id, 0, &form.reason)
+        .ban_with_reason(ctx, user.id, 0, &form.reason)
         .await
     {
-        ctx.send(|c| {
-            c.content("üye yasaklanamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye yasaklanamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     }
 
-    ctx.send_message(format!("{} yasaklandı", user)).await?;
+    //ctx.send_message(format!("{} yasaklandı", user)).await?;
 
-    log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
+    //log_sys!(ctx, "{} {} tarafından yasaklandı", user, ctx.author());
 
     return Ok(());
 }
 
 async fn unban(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
-    guild: serenity::Guild,
+    guild: serenity::GuildId,
 ) -> Result<(), types::Error> {
-    let result =
-        util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
-            .await?;
+    let result = true; //util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
+        // .await?;
 
     if result {
-        guild.unban(ctx.http(), &user).await?;
+        guild.unban(ctx, &user).await?;
 
-        ctx.send_message(format!("{} banı kaldırıldı", user))
-            .await?;
+        //ctx.send_message(format!("{} banı kaldırıldı", user))
+        //    .await?;
 
-        log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
+        //log_sys!(ctx, "{} banı {} tarafından kaldırıldı", user, ctx.author());
     }
 
     Ok(())

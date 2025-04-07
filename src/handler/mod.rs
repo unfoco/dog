@@ -1,6 +1,6 @@
 use poise::serenity_prelude as serenity;
 
-use crate::{config, types};
+use crate::types;
 
 pub mod command;
 pub mod error;
@@ -10,36 +10,46 @@ pub async fn handle_setup(
     ctx: &serenity::Context,
     _framework: &types::Framework,
     ready: &serenity::Ready,
-    config: config::Config,
+    config: types::Config,
 ) -> Result<types::Data, types::Error> {
-    let mut slash = vec![];
-    let mut menu = vec![];
+    let commands = commands();
 
-    for command in crate::command::list() {
-        if command.context_menu_action.is_none() {
-            slash.push(command);
-        } else {
-            menu.push(command);
-        }
-    }
-
-    let guild = config.guild_id;
-
-    for _ in 1..=5 {
-        let Some(command) = menu.pop() else { continue };
-        slash.push(command)
-    }
-
-    poise::builtins::register_in_guild(ctx, &slash[..], guild).await?;
-
-    poise::builtins::register_globally(ctx, &menu[..]).await?;
+    poise::builtins::register_in_guild(
+        ctx, &commands.0[..], config.guild
+    ).await?;
+    poise::builtins::register_globally(
+        ctx, &commands.1[..]
+    ).await?;
 
     ctx.cache.set_max_messages(100);
 
-    ctx.set_presence(None, serenity::OnlineStatus::DoNotDisturb)
-        .await;
-
     println!("logged in as {}", ready.user.name);
 
-    Ok(types::Data { config })
+    Ok(types::Data {
+        config
+    })
+}
+
+// pity that discord limits menu commands to 5...
+fn commands() -> (Vec<types::Command>, Vec<types::Command>) {
+    let mut a = vec![];
+    let mut b = vec![];
+
+    for command in crate::command::list() {
+        if command.context_menu_action.is_none() {
+            a.push(command);
+        } else {
+            b.push(command);
+        }
+    }
+
+    for _ in 1..=5 {
+        let Some(command) = b.pop() else {
+            continue
+        };
+
+        a.push(command)
+    }
+
+    (a, b)
 }

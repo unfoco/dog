@@ -1,8 +1,6 @@
 use poise::serenity_prelude as serenity;
 
 use crate::types;
-use crate::util::macros::log_sys;
-use crate::util::traits::ExtendContext;
 
 #[derive(Debug, poise::Modal)]
 #[name = "kick"]
@@ -21,7 +19,7 @@ struct KickModal {
     hide_in_help
 )]
 pub async fn kick_user(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     user: serenity::User,
 ) -> Result<(), types::Error> {
     kick(ctx, user).await
@@ -34,21 +32,21 @@ pub async fn kick_user(
     hide_in_help
 )]
 pub async fn kick_message(
-    ctx: types::AppContext<'_>,
+    ctx: types::ContextApp<'_>,
     msg: serenity::Message,
 ) -> Result<(), types::Error> {
     kick(ctx, msg.author).await
 }
 
-async fn kick(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), types::Error> {
+async fn kick(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
     let guild = ctx.guild_id().unwrap();
 
-    if guild.member(ctx.http(), &user.id).await.is_err() {
-        ctx.send(|c| {
-            c.content("üye bulunamadığından atılamadı");
-            c.ephemeral(true)
-        })
-        .await?;
+    if guild.member(ctx, &user.id).await.is_err() {
+        ctx.send(
+            poise::CreateReply::default()
+                .content("üye bulunamadığından atılamadı")
+                .ephemeral(true)
+        ).await?;
         return Ok(());
     };
 
@@ -66,12 +64,12 @@ async fn kick(ctx: types::AppContext<'_>, user: serenity::User) -> Result<(), ty
     };
 
     guild
-        .kick_with_reason(ctx.http(), user.id, &form.reason)
+        .kick_with_reason(ctx, user.id, &form.reason)
         .await?;
 
-    ctx.send_message(format!("{} atıldı", user)).await?;
+    //ctx.send_message(format!("{} atıldı", user)).await?;
 
-    log_sys!(ctx, "{} {} tarafından atıldı", user, ctx.author());
+    //log_sys!(ctx, "{} {} tarafından atıldı", user, ctx.author());
 
     return Ok(());
 }
