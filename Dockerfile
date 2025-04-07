@@ -1,7 +1,7 @@
 FROM rust:1.82.0-alpine as build
 
 RUN apk update
-RUN apk add pkgconfig openssl openssl-dev musl-dev
+RUN apk add pkgconfig musl-dev
 
 RUN rustup target add x86_64-unknown-linux-musl
 RUN rustup toolchain install stable-x86_64-unknown-linux-musl
