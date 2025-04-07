@@ -37,9 +37,9 @@ features = [
     "rt-multi-thread"
 ]
 
-[profile.release]
-codegen-units = 1
-lto = true
-opt-level = "s"
-panic = "abort"
-strip = true
+# [profile.release]
+# codegen-units = 1
+# lto = true
+# opt-level = "s"
+# panic = "abort"
+# strip = true
