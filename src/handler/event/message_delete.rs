@@ -11,7 +11,9 @@ pub async fn handle(
     message_id: &serenity::MessageId,
     guild_id: &Option<serenity::GuildId>,
 ) -> Result<(), types::Error> {
-    let message = ctx.cache.message(channel_id, message_id);
+    let message = ctx.cache
+        .message(channel_id, message_id)
+        .map(|x| x.to_owned());
 
     let Some(message) = message else {
         return Ok(());

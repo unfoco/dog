@@ -16,39 +16,41 @@ pub async fn handle(
     data: &types::Data,
 ) -> Result<(), types::Error> {
     match event {
-        //FullEvent::MessageDelete {
-        //    channel_id,
-        //    deleted_message_id,
-        //    guild_id,
-        //} => {
-        //    message_delete::handle(
-        //        ctx, framework, data, channel_id, deleted_message_id, guild_id
-        //    ).await?
-        //}
+        FullEvent::MessageDelete {
+            channel_id, deleted_message_id, guild_id
+        } => {
+            message_delete::handle(
+                ctx, framework, data, channel_id, deleted_message_id, guild_id
+            ).await?
+        }
 
         FullEvent::MessageUpdate {
-            old_if_available,
-            new,
-            event,
+            old_if_available, new, event
         } => {
             message_update::handle(
                 ctx, framework, data, old_if_available, new, event
             ).await?
         },
 
-        FullEvent::ReactionRemove { removed_reaction } => {
+        FullEvent::ReactionRemove {
+            removed_reaction
+        } => {
             reaction_remove::handle(
                 ctx, framework, data, removed_reaction
             ).await?
         }
 
-        FullEvent::GuildMemberAddition { new_member } => {
+        FullEvent::GuildMemberAddition {
+            new_member
+        } => {
             guild_member_add::handle(
                 ctx, framework, data, new_member
             ).await?
         }
 
-        FullEvent::Message { new_message } => {
+        FullEvent::Message {
+            new_message
+        } => {
             message::handle(
                 ctx, framework, data, new_message
             ).await?

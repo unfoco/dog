@@ -39,7 +39,7 @@ pub async fn ban_message(
 }
 
 async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), types::Error> {
-    let guild = ctx.guild().unwrap();
+    let guild = ctx.guild_id().unwrap();
 
     let Ok(bans) = guild.bans(ctx, None, None).await else {
         return Ok(());
@@ -50,7 +50,7 @@ async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), typ
         .find_map(|b| if b.user == user { Some(()) } else { None })
         .is_some()
     {
-        return unban(ctx, user, guild.to_owned()).await;
+        return unban(ctx, user, guild).await;
     }
 
     let Some(form) = ({
@@ -87,7 +87,7 @@ async fn ban(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), typ
 async fn unban(
     ctx: types::ContextApp<'_>,
     user: serenity::User,
-    guild: serenity::Guild,
+    guild: serenity::GuildId,
 ) -> Result<(), types::Error> {
     let result = true; //util::interactions::send_confirm(ctx, "bu üye zaten banlı banı kaldırmak istiyor musunuz?")
         // .await?;

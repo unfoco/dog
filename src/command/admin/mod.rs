@@ -1,6 +1,6 @@
 use crate::types;
 
-//mod ban;
+mod ban;
 mod kick;
 mod mute;
 //mod pin;
@@ -10,8 +10,8 @@ mod warn;
 
 pub fn commands() -> Vec<types::Command> {
     return vec![
-        //ban::ban_user(),
-        //ban::ban_message(),
+        ban::ban_user(),
+        ban::ban_message(),
         kick::kick_user(),
         kick::kick_message(),
         mute::mute_user(),
