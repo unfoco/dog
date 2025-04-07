@@ -13,14 +13,14 @@ pub async fn handle(
     };
 
     let embed = serenity::CreateEmbed::new()
-    .description(format!(
-        "{} {} mesajından {} tepkisini kaldırdı",
-        member.user,
-        reaction
-            .message_id
-            .link(reaction.channel_id, reaction.guild_id),
-        reaction.emoji,
-    ));
+        .description(format!(
+            "{} {} mesajından {} tepkisini kaldırdı",
+            member.user,
+            reaction
+                .message_id
+                .link(reaction.channel_id, reaction.guild_id),
+            reaction.emoji,
+        ));
 
     let logs = &data.config.logs;
 

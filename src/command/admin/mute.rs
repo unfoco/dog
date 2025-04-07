@@ -71,11 +71,20 @@ async fn mute(ctx: types::ContextApp<'_>, user: serenity::User) -> Result<(), ty
         return Ok(());
     };
 
+    let Ok(duration) = duration_str::parse(&form.duration) else {
+        ctx.send(
+            poise::CreateReply::default()
+                .content("belirtilen süre geçersiz")
+                .ephemeral(true)
+        ).await?;
+        return Ok(());
+    };
+
     if let Err(_) = member
         .disable_communication_until_datetime(
             ctx,
             serenity::Timestamp::from(
-                chrono::Utc::now() + duration_str::parse(&form.duration).unwrap(),
+                chrono::Utc::now() + duration,
             ),
         )
         .await
