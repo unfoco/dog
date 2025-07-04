@@ -1,5 +1,5 @@
-use ::serenity::json;
 use poise::serenity_prelude as serenity;
+use serenity::json;
 
 use crate::types;
 
@@ -12,7 +12,7 @@ mod edit;
     guild_only,
     hide_in_help
 )]
-pub async fn pin(ctx: types::AppContext<'_>, msg: serenity::Message) -> Result<(), types::Error> {
+pub async fn pin(ctx: types::ContextApp<'_>, msg: serenity::Message) -> Result<(), types::Error> {
     let result = ctx
         .data
         .config

@@ -1,23 +1,25 @@
-use ::serenity::prelude::Mentionable;
 use poise::serenity_prelude as serenity;
+use serenity::Mentionable;
 
 use crate::types;
 
 pub async fn handle(
     ctx: &serenity::Context,
-    _framework: types::FrameworkContext<'_>,
+    _framework: types::ContextFramework<'_>,
     data: &types::Data,
     channel_id: &serenity::ChannelId,
     message_id: &serenity::MessageId,
-    _guild_id: &Option<serenity::GuildId>,
+    guild_id: &Option<serenity::GuildId>,
 ) -> Result<(), types::Error> {
-    let message = ctx.cache.message(channel_id, message_id);
+    let message = ctx.cache
+        .message(channel_id, message_id)
+        .map(|x| x.to_owned());
 
     let Some(message) = message else {
         return Ok(());
     };
 
-    if message.guild_id.is_none() {
+    if guild_id.is_none() {
         return Ok(());
     }
 
@@ -27,30 +29,32 @@ pub async fn handle(
         return Ok(());
     }
 
-    let log = logs.member;
+    let mut builder = serenity::CreateMessage::new()
+        .add_embed(
+            serenity::CreateEmbed::new()
+                .description(format!(
+                    "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
+                    channel_id.mention(),
+                    message.author,
+                ))
+        );
 
-    log.send_message(ctx, |c| {
-        c.add_embed(|c| {
-            c.description(format!(
-                "{} kanalında {} tarafından gönderilen bir mesaj kaldırıldı",
-                channel_id.mention(),
-                message.author,
-            ))
-        });
+    if !message.content.is_empty() {
+        builder = builder.add_embed(
+            serenity::CreateEmbed::new()
+                .description(&message.content)
+        );
+    }
 
-        if !message.content.is_empty() {
-            c.add_embed(|c| c.description(message.content));
-        }
+    for attachment in &message.attachments {
+        let file = serenity::CreateAttachment::url(ctx, &attachment.url)
+            .await?;
 
-        for attachment in &message.attachments {
-            c.add_file(serenity::AttachmentType::Image(
-                url::Url::parse(&attachment.url).unwrap(),
-            ));
-        }
+        builder = builder.add_file(file);
+    }
 
-        c
-    })
-    .await?;
+    logs.member.send_message(ctx, builder)
+        .await?;
 
     Ok(())
 }

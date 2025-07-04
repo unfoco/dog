@@ -1,95 +1,59 @@
-use ::serenity::builder::CreateEmbed;
-use ::serenity::model::prelude::Message;
-use poise::serenity_prelude as serenity;
+use poise::serenity_prelude::*;
 
-use crate::config::Config;
+pub type Command = poise::Command<Data, Error>;
 
-pub type CommandVec = Vec<poise::Command<Data, Error>>;
+pub type Context<'a> = poise::Context<'a, Data, Error>;
+pub type ContextApp<'a> = poise::ApplicationContext<'a, Data, Error>;
+pub type ContextFramework<'a> = poise::FrameworkContext<'a, Data, Error>;
+
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
+pub type ErrorFramework<'a> = poise::FrameworkError<'a, Data, Error>;
 
 pub type Framework = poise::Framework<Data, Error>;
 pub type FrameworkOptions = poise::FrameworkOptions<Data, Error>;
-
-pub type Context<'a> = poise::Context<'a, Data, Error>;
-pub type AppContext<'a> = poise::ApplicationContext<'a, Data, Error>;
-pub type FrameworkContext<'a> = poise::FrameworkContext<'a, Data, Error>;
-
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-pub type FrameworkError<'a> = poise::FrameworkError<'a, Data, Error>;
 
 pub struct Data {
     pub config: Config,
 }
 
-impl Data {
-    pub async fn log_mem<H, C>(&self, http: H, content: C) -> serenity::Result<Message>
-    where
-        H: AsRef<serenity::Http>,
-        C: ToString,
-    {
-        self.config
-            .logs
-            .member
-            .send_message(http, |c| c.embed(|c| c.description(content)))
-            .await
-    }
+use std::collections::HashMap;
 
-    pub async fn log_mem_with_embed<H, C, F>(
-        &self,
-        http: H,
-        content: C,
-        f: F,
-    ) -> serenity::Result<Message>
-    where
-        H: AsRef<serenity::Http>,
-        C: ToString,
-        F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed,
-    {
-        self.config
-            .logs
-            .member
-            .send_message(http, |c| {
-                c.embed(|c| {
-                    let n = f(c);
-                    n.description(content);
-                    n
-                })
-            })
-            .await
-    }
+use serde::Deserialize;
 
-    pub async fn log_sys<H, C>(&self, http: H, content: C) -> serenity::Result<Message>
-    where
-        H: AsRef<serenity::Http>,
-        C: ToString,
-    {
-        self.config
-            .logs
-            .system
-            .send_message(http, |c| c.embed(|c| c.description(content)))
-            .await
-    }
+#[derive(Deserialize)]
+pub struct Config {
+    pub token: String,
+    pub guild: GuildId,
+    pub admins: Vec<UserId>,
+    pub boards: HashMap<String, Board>,
+    pub roles: Roles,
+    pub logs: Logs,
+}
 
-    pub async fn log_sys_with_embed<H, C, F>(
-        &self,
-        http: H,
-        content: C,
-        f: F,
-    ) -> serenity::Result<Message>
-    where
-        H: AsRef<serenity::Http>,
-        C: ToString,
-        F: FnOnce(&mut CreateEmbed) -> &mut CreateEmbed,
-    {
-        self.config
-            .logs
-            .system
-            .send_message(http, |c| {
-                c.embed(|c| {
-                    let n = f(c);
-                    n.description(content);
-                    n
-                })
-            })
-            .await
+#[derive(Deserialize)]
+pub struct Board {
+    pub webhook: String,
+    pub channel: ChannelId,
+}
+
+#[derive(Deserialize)]
+pub struct Roles {
+    pub default: RoleId,
+    pub warnings: Vec<RoleId>,
+}
+
+#[derive(Deserialize)]
+pub struct Logs {
+    pub system: ChannelId,
+    pub member: ChannelId,
+}
+
+impl Config {
+    pub fn load() -> Result<Self, config::ConfigError> {
+        config::Config::builder()
+            .add_source(config::File::with_name("Config"))
+            .add_source(config::Environment::with_prefix("DOG_"))
+            .build()?
+            .try_deserialize()
     }
 }
